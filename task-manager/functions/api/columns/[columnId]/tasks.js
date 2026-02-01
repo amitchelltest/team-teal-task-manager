@@ -51,3 +51,75 @@ export async function onRequestGet(context) {
 };
 
 
+//Break
+
+
+export async function onRequestPost(context) {
+
+    const { request, env, params } = context;
+
+    const CORS = buildCorsHeaders(env, request, "POST,OPTIONS");
+
+    //borrowed from helpers.js
+    if (request.headers.get("Origin") && !CORS) {
+      return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    //cf_db D1 binding name
+    const db = env.cf_db;
+
+    //borrowed from helpers.js
+    if (!db) {
+        return new Response(JSON.stringify({ error: "Database not found" }), {
+        status: 500,
+        headers: CORS,
+        })
+    };
+
+    //borrowed from helpers.js
+    if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers: CORS });
+    };
+
+
+
+
+};
+
+//getting the string response from onRequestGet
+const getResponse = onRequestGet();
+//Parsing
+const data = JSON.parse(getResponse);
+
+//use parseJson() helper instead?
+
+/*
+validateIdentifier(task_id) {}
+
+const row  = await queryOne(db, sql, [params.columnId]); 
+
+const sql = 
+'
+SELECT MAX(position) AS max_position
+FROM Column_Tasks
+WHERE column_id = ?
+'
+const row  = await queryOne(db, sql, [params.columnId]); 
+
+if (row.max_position === null) {
+    positon = 1; 
+} else {
+    position = row.max_position + 1;     
+}
+
+const insert = await insertInto(db, column_tasks, columns = [posititon], values =[row] ){
+}
+
+return new Response(
+    JSON.stringify(rows),
+    { status: 200, headers: CORS },
+);
+*/
