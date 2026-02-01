@@ -1,4 +1,4 @@
-import { queryAll, buildCorsHeaders } from "../../helpers";
+import { queryAll, buildCorsHeaders, parseJson, insertInto } from "../../helpers";
 
 export async function onRequestGet(context) {
 
@@ -51,11 +51,11 @@ export async function onRequestGet(context) {
 };
 
 
-//Break
+//End GET start POST
 
 
 export async function onRequestPost(context) {
-
+    
     const { request, env, params } = context;
 
     const CORS = buildCorsHeaders(env, request, "POST,OPTIONS");
@@ -68,6 +68,13 @@ export async function onRequestPost(context) {
       });
     }
 
+    //borrowed from helpers.js
+    if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers: CORS });
+    };
+
+    const body = await parseJson(request);
+
     //cf_db D1 binding name
     const db = env.cf_db;
 
@@ -79,47 +86,23 @@ export async function onRequestPost(context) {
         })
     };
 
-    //borrowed from helpers.js
-    if (request.method === "OPTIONS") {
-        return new Response(null, { status: 204, headers: CORS });
-    };
+    //Geting the task with the lowest position first LIFO
+    const sql = 
+    `
+    SELECT MAX(position) AS max_position
+    FROM Column_Tasks
+    WHERE column_id = ?
+    `
+    ;
 
+    const result = await queryOne(db, sql, [params.columnId]);
 
+    insertInto(db, "Column_Tasks", ["task_id", "column_id", "position"], row, "Column_Tasks");
 
+    return new Response(
+        JSON.stringify(),
+        { status: 201, headers: CORS },
+    );
 
 };
 
-//getting the string response from onRequestGet
-const getResponse = onRequestGet();
-//Parsing
-const data = JSON.parse(getResponse);
-
-//use parseJson() helper instead?
-
-/*
-validateIdentifier(task_id) {}
-
-const row  = await queryOne(db, sql, [params.columnId]); 
-
-const sql = 
-'
-SELECT MAX(position) AS max_position
-FROM Column_Tasks
-WHERE column_id = ?
-'
-const row  = await queryOne(db, sql, [params.columnId]); 
-
-if (row.max_position === null) {
-    positon = 1; 
-} else {
-    position = row.max_position + 1;     
-}
-
-const insert = await insertInto(db, column_tasks, columns = [posititon], values =[row] ){
-}
-
-return new Response(
-    JSON.stringify(rows),
-    { status: 200, headers: CORS },
-);
-*/
