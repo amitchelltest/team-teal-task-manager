@@ -97,12 +97,28 @@ export async function onRequestPost(context) {
 
     const result = await queryOne(db, sql, [params.columnId]);
 
-    insertInto(db, "Column_Tasks", ["task_id", "column_id", "position"], row, "Column_Tasks");
+    // Method for inserting tasks with their position, taking into account the first entry
+    // and then correct placement for subsequint entries. 
+    // (AI Transparency: used AI to assist in writing this concisely)
+    const calcNextPosition = 
+        result?.max_position === null || result?.max_position === undefined
+        ? 1
+        : result.max_position = 1;
 
-    return new Response(
-        JSON.stringify(),
-        { status: 201, headers: CORS },
+    await insertInto (
+        db, 
+        "Column_Tasks",
+        ["task_id", "column_id", "position"],
+        [body.task_id, params.columnId, calcNextPosition]
     );
 
+    return new Response(
+        JSON.stringify({
+            task_id: body.task_id,
+            columnId: params.columnId,
+            position: calcNextPosition,
+        }), 
+        { status: 201, headers: CORS}
+    );
 };
 
