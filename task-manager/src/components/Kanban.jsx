@@ -1,20 +1,25 @@
 import KanbanColumn from "./KanbanColumn";
 import './kanban.css'
 
+/**
+ * Kanban
+ *
+ * Kanban board component that displays KanbanColumn components
+ * - Displays 5 columns: To do, Blocked, In progress, In review, Complete
+ * - Columns can be scrolled through independently
+ * - Tasks can be clicked to display full details
+ *
+ * TODO: Get tasks from database
+ * TODO: Implement dragging tasks between columns
+ */
+
 function Kanban() {
-    const tasks1 = [
-        { id: 1, title: "Test1"},
-        { id: 2, title: "Test2"},
-        { id: 3, title: "Test3"},
-        { id: 4, title: "Test4"},
-        { id: 5, title: "Test5"}
-    ];
     const columns = [
-        { title: "To do", tasks: tasks1},
-        { title: "Blocked", tasks: tasks1},
-        { title: "In Progress", tasks: tasks1},
-        { title: "In Review", tasks: tasks1},
-        { title: "Complete", tasks: tasks1}
+        { title: "To do", tasks: []},
+        { title: "Blocked", tasks: []},
+        { title: "In Progress", tasks: []},
+        { title: "In Review", tasks: []},
+        { title: "Complete", tasks: []}
     ];
     return(
         <section className={`kanban`}>
