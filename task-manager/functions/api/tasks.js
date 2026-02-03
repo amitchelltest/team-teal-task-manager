@@ -54,13 +54,19 @@ export async function onRequestPost(context) {
 
     // If no explicit position provided, and we have a column_id, compute next position
     if (body.position === undefined && body.column_id !== undefined) {
-      const row = await queryOne(
-        db,
-        "SELECT COALESCE(MAX(position), -1) AS maxpos FROM Tasks WHERE column_id = ?",
-        [body.column_id],
-      );
-      const maxpos = row && Number.isFinite(Number(row.maxpos)) ? Number(row.maxpos) : -1;
-      body.position = maxpos + 1;
+      try {
+        const row = await queryOne(
+          db,
+          "SELECT COALESCE(MAX(position), -1) AS maxpos FROM Tasks WHERE column_id = ?",
+          [body.column_id],
+        );
+        const maxpos = row && Number.isFinite(Number(row.maxpos)) ? Number(row.maxpos) : -1;
+        body.position = maxpos + 1;
+      } catch (err) {
+        // If the `position` column doesn't exist in the DB, fall back to position 0
+        console.warn("Could not compute max(position) — falling back to position 0", err && err.stack ? err.stack : err);
+        body.position = 0;
+      }
     }
 
     // Choose columns from allowedColumns if provided (but only those present in body), otherwise from body keys
