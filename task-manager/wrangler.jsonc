@@ -19,7 +19,7 @@
 		}
 	],
 	"env": {
-		"test": {
+		"preview": {
 			"d1_databases": [
 				{
 					"binding": "cf_db",
