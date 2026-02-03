@@ -18,9 +18,9 @@
 		"deploy": "npm run build && wrangler pages deploy",
 
 		"cf-typegen": "wrangler types",
-		"cf:migrate:test": "npx wrangler d1 migrations apply cf_db --remote --log-level warn",
-		"cf:migrate:prod": "npx wrangler d1 migrations apply cf_db --remote --env production --log-level warn",
-		"cf:migrate:local": "wrangler d1 migrations apply cf_db --local --log-level warn",
+		"cf:migrate:test": "npx wrangler d1 migrations apply cf_db --remote",
+		"cf:migrate:prod": "npx wrangler d1 migrations apply cf_db --remote --env production",
+		"cf:migrate:local": "wrangler d1 migrations apply cf_db --local",
 		"predev": "npm run cf:migrate:local",
 		"cypress:open:ct": "cypress open --component --config-file cypress.config.mjs"
 	},
