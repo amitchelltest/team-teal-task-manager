@@ -43,19 +43,19 @@ describe("TaskForm (Vitest)", () => {
     vi.restoreAllMocks();
   });
 
-  it("validates required title before submit and does not call fetch", () => {
+  it("validates required title before submit and does not call fetch", async () => {
     const { container } = renderTaskForm();
 
     const submitButton = container.querySelector("button[type='submit']");
     expect(submitButton).not.toBeNull();
 
-    submitButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await click(submitButton);
 
     expect(container.textContent).toContain("This field is required");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("invokes onCancel when Cancel button is clicked", () => {
+  it("invokes onCancel when Cancel button is clicked", async () => {
     const onCancel = vi.fn();
     const { container } = renderTaskForm({ onCancel });
 
@@ -65,7 +65,7 @@ describe("TaskForm (Vitest)", () => {
 
     expect(cancelButton).not.toBeNull();
 
-    cancelButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await click(cancelButton);
 
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
