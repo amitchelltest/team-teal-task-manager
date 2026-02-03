@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS Tasks (
 
 -- Tasks: ensure start_date never exceeds due_date...
 -- ...on insert
-CREATE TRIGGER validate_task_dates_insert
+CREATE TRIGGER IF NOT EXISTS validate_task_dates_insert
 BEFORE INSERT ON Tasks
 FOR EACH ROW
 WHEN NEW.start_date IS NOT NULL 
@@ -88,7 +88,7 @@ SELECT RAISE(ABORT, 'start_date must be <= due_date');
 END;
 
 -- ...on update
-CREATE TRIGGER validate_task_dates_update
+CREATE TRIGGER IF NOT EXISTS validate_task_dates_update
 BEFORE UPDATE ON Tasks
 FOR EACH ROW
 WHEN NEW.start_date IS NOT NULL 
@@ -100,7 +100,7 @@ END;
 
 -- Sprints: ensure start_date never exceeds end_date...
 -- ...on insert
-CREATE TRIGGER validate_sprint_dates_insert
+CREATE TRIGGER IF NOT EXISTS validate_sprint_dates_insert
 BEFORE INSERT ON Sprints
 FOR EACH ROW
 WHEN NEW.start_date IS NOT NULL 
@@ -111,7 +111,7 @@ SELECT RAISE(ABORT, 'start_date must be <= end_date');
 END;
 
 -- ...on update
-CREATE TRIGGER validate_sprint_dates_update
+CREATE TRIGGER IF NOT EXISTS validate_sprint_dates_update
 BEFORE UPDATE ON Sprints
 FOR EACH ROW
 WHEN NEW.start_date IS NOT NULL 
@@ -137,7 +137,7 @@ CREATE TABLE IF NOT EXISTS Comments (
 
 -- Triggers
 -- When a row is updated, automatically update its updated_at field to current timestamp
-CREATE TRIGGER update_comments_updated_at
+CREATE TRIGGER IF NOT EXISTS update_comments_updated_at
 AFTER UPDATE ON Comments
 FOR EACH ROW
 WHEN NEW.updated_at = OLD.updated_at
@@ -148,9 +148,9 @@ BEGIN
 END;
 
 -- maybe helpful indices
-CREATE INDEX idx_projects_created_by ON Projects(created_by);
-CREATE INDEX idx_sprints_project_id ON Sprints(project_id);
-CREATE INDEX idx_tasks_project_id ON Tasks(project_id);
-CREATE INDEX idx_tasks_sprint_id ON Tasks(sprint_id);
-CREATE INDEX idx_tasks_assignee_id ON Tasks(assignee_id);
-CREATE INDEX idx_comments_task_id ON Comments(task_id);
+CREATE INDEX IF NOT EXISTS idx_projects_created_by ON Projects(created_by);
+CREATE INDEX IF NOT EXISTS idx_sprints_project_id ON Sprints(project_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON Tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_sprint_id ON Tasks(sprint_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_assignee_id ON Tasks(assignee_id);
+CREATE INDEX IF NOT EXISTS idx_comments_task_id ON Comments(task_id);
