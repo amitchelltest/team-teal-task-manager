@@ -1,10 +1,15 @@
 // Notes:
-// - These helpers still require you to pass safe whereClause strings that use ? placeholders for values.
-//   Do NOT build whereClause by concatenating untrusted user input (validate identifiers instead).
-// - Prefer supplying an allowedTables array (e.g. from env or hard-coded) when using table-name abstraction.
-// - Column names are validated against a strict regex; values are parameterized to avoid injection.
-// - For complex schemas, explicit per-table handlers remain more maintainable; these helpers are useful
-//   when you have many similar tables and can centrally control allowed tables/columns.
+// - These helpers validate identifiers and parameterize values to avoid SQL injection.
+// - The `makeCrudHandlers` collection GET now supports safe query-parameter filtering:
+//   - Only query params whose names appear in the handler's `allowedColumns` are considered.
+//   - Column names are validated again with `validateIdentifier` before use.
+//   - Values are passed as bound parameters (`?`) to prevent injection; the literal value "null"
+//     will be interpreted as an `IS NULL` filter.
+//   - If `allowedColumns` is empty or not provided, no automatic filtering from query params is applied.
+// - Prefer supplying an `allowedTables` array (e.g. from env or hard-coded) when using table-name
+//   abstraction.
+// - For complex schemas, explicit per-table handlers remain more maintainable; these helpers are
+//   useful when you have many similar tables and can centrally control allowed tables/columns.
 
 /**
  * Build CORS headers for a request if the `Origin` is allowed.
@@ -232,7 +237,7 @@ export async function updateTable(
   allowedTables = [],
 ) {
   validateTable(table, allowedTables);
-  if(!whereClause) throw new Error("Missing WHERE clause for update");
+  if (!whereClause) throw new Error("Missing WHERE clause for update");
   const cols = Object.keys(updatesObj);
   if (cols.length === 0) throw new Error("Nothing to update");
   validateColumnNames(cols);
@@ -257,24 +262,32 @@ export async function deleteFrom(
   allowedTables = [],
 ) {
   validateTable(table, allowedTables);
-  if(!whereClause) throw new Error("Missing WHERE clause for delete");
+  if (!whereClause) throw new Error("Missing WHERE clause for delete");
   const sql = `DELETE FROM ${table}${whereClause ? " WHERE " + whereClause : ""}`;
   return execute(db, sql, params);
 }
 
 /**
  * Create generic CRUD handlers for a table.
+ *
  * Options:
  * - `table` (string, required): table name
  * - `primaryKey` (string): primary key column name (default: 'id')
  * - `allowedTables` (Array<string>): optional allowlist of table names
- * - `allowedColumns` (Array<string>): columns to accept for inserts/updates
+ * - `allowedColumns` (Array<string>): columns accepted for inserts/updates and allowed for
+ *     safe query-param filtering on collection GET (see notes at top).
  * - `dbEnvVar` (string): env key for DB binding (default: 'cf_db')
  * - `orderBy` (string): ORDER BY clause for collection GET
  *
- * Returns an object `{ collection, item }` where `collection` handles
- * GET/POST/OPTIONS for the collection and `item` handles GET/PUT/PATCH/DELETE/OPTIONS
- * for a single resource identified by `:id` (or `params[primaryKey]`).
+ * Behavior:
+ * - `collection` handles GET/POST/OPTIONS for the collection. Collection GET will
+ *   automatically convert query string parameters into a safe WHERE clause only when
+ *   `allowedColumns` is provided and non-empty. Each allowed param is validated as an
+ *   identifier and its value is parameterized. The literal value `null` (string) will be
+ *   treated as `IS NULL`.
+ * - `item` handles GET/PUT/PATCH/DELETE/OPTIONS for a single resource identified by `:id`.
+ *
+ * Returns an object `{ collection, item }`.
  *
  * @param {object} options
  * @returns {{collection: function, item: function}}
@@ -317,10 +330,35 @@ export function makeCrudHandlers(options = {}) {
         return new Response(null, { status: 204, headers: CORS });
 
       if (request.method === "GET") {
-        const whereClause = "";
+        // Allow safe filtering via query params but only for columns listed in `allowedColumns`.
+        // This prevents arbitrary column names or SQL fragments from being injected.
+        const url = new URL(request.url);
+        const search = url.searchParams;
+
+        const whereParts = [];
         const params = [];
+
+        // Only consider filters when allowedColumns is provided and non-empty.
+        if (Array.isArray(allowedColumns) && allowedColumns.length > 0) {
+          for (const [key, value] of search) {
+            // skip unknown keys
+            if (!allowedColumns.includes(key)) continue;
+            // validate the identifier again for extra safety
+            validateIdentifier(key);
+
+            if (value === "null") {
+              // explicit IS NULL filter when client requests 'null'
+              whereParts.push(`${key} IS NULL`);
+            } else {
+              whereParts.push(`${key} = ?`);
+              params.push(value);
+            }
+          }
+        }
+
+        const whereClause = whereParts.length ? whereParts.join(" AND ") : "";
         const order = orderBy ? ` ORDER BY ${orderBy}` : "";
-        const sql = `SELECT * FROM ${table}${whereClause}${order}`;
+        const sql = `SELECT * FROM ${table}${whereClause ? " WHERE " + whereClause : ""}${order}`;
         const rows = await queryAll(db, sql, params);
         return new Response(JSON.stringify(rows || []), { headers: CORS });
       }
@@ -363,7 +401,10 @@ export function makeCrudHandlers(options = {}) {
       );
       return new Response(
         JSON.stringify({ error: String(err || "Internal error") }),
-        { status: 500, headers: CORS || { "Content-Type": "application/json" } },
+        {
+          status: 500,
+          headers: CORS || { "Content-Type": "application/json" },
+        },
       );
     }
   }
