@@ -1,29 +1,17 @@
-import React, { act } from "react";
+import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createRoot } from "react-dom/client";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import TaskDetail from "../../src/pages/TaskDetail.jsx";
-
-// Enable React act() support in this test environment
-// eslint-disable-next-line no-undef
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+import { renderWithRoot, click, input } from "../test-utils/reactTestUtils.jsx";
 
 function renderTaskDetail(initialPath = "/task/42") {
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-
-  act(() => {
-    root.render(
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route path="/task/:id" element={<TaskDetail />} />
-        </Routes>
-      </MemoryRouter>,
-    );
-  });
-
-  return { container, root };
+  return renderWithRoot(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <Routes>
+        <Route path="/task/:id" element={<TaskDetail />} />
+      </Routes>
+    </MemoryRouter>,
+  );
 }
 
 describe("TaskDetail (Vitest)", () => {
@@ -90,9 +78,7 @@ describe("TaskDetail (Vitest)", () => {
     const addButton = container.querySelector("button");
     expect(addButton).not.toBeNull();
 
-    await act(async () => {
-      addButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
+    await click(addButton);
 
     const postCalls = fetchMock.mock.calls.filter(([, options = {}]) => {
       return options.method === "POST" && String(options.body || "").includes("task_id");
@@ -110,14 +96,9 @@ describe("TaskDetail (Vitest)", () => {
     expect(textarea).not.toBeNull();
     expect(addButton).not.toBeNull();
 
-    act(() => {
-      textarea.value = "   ";
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
-    });
+    input(textarea, "   ");
 
-    await act(async () => {
-      addButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
+    await click(addButton);
 
     const postCalls = fetchMock.mock.calls.filter(([, options = {}]) => {
       return options.method === "POST" && String(options.body || "").includes("task_id");

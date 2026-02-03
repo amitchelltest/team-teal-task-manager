@@ -1,33 +1,23 @@
-import React, { act } from "react";
+import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createRoot } from "react-dom/client";
 import TaskForm from "../../src/components/TaskForm.jsx";
-
-// Enable React act() support in this test environment
-// eslint-disable-next-line no-undef
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+import { renderWithRoot, click } from "../test-utils/reactTestUtils.jsx";
 
 function renderTaskForm(props = {}) {
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-
   const onSuccess = props.onSuccess ?? vi.fn();
   const onCancel = props.onCancel ?? vi.fn();
 
-  act(() => {
-    root.render(
-      <TaskForm
-        projectId={1}
-        createdBy="alice"
-        modifiedBy="alice"
-        columnId={props.columnId ?? null}
-        taskId={props.taskId ?? null}
-        onSuccess={onSuccess}
-        onCancel={onCancel}
-      />,
-    );
-  });
+  const { container, root } = renderWithRoot(
+    <TaskForm
+      projectId={1}
+      createdBy="alice"
+      modifiedBy="alice"
+      columnId={props.columnId ?? null}
+      taskId={props.taskId ?? null}
+      onSuccess={onSuccess}
+      onCancel={onCancel}
+    />,
+  );
 
   return { container, root, onSuccess, onCancel };
 }
@@ -59,9 +49,7 @@ describe("TaskForm (Vitest)", () => {
     const submitButton = container.querySelector("button[type='submit']");
     expect(submitButton).not.toBeNull();
 
-    act(() => {
-      submitButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
+    submitButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(container.textContent).toContain("This field is required");
     expect(fetchMock).not.toHaveBeenCalled();
@@ -77,9 +65,7 @@ describe("TaskForm (Vitest)", () => {
 
     expect(cancelButton).not.toBeNull();
 
-    act(() => {
-      cancelButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
+    cancelButton.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
     expect(onCancel).toHaveBeenCalledTimes(1);
   });

@@ -1,3 +1,6 @@
+// Script to run integration tests against a local Wrangler Pages
+// dev server backed by a fresh local D1 database.
+
 import { spawn } from "node:child_process";
 import process from "node:process";
 import { setTimeout as delay } from "node:timers/promises";
@@ -6,15 +9,17 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+// Resolve project root (one level up from this script file).
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 
-// Use a dedicated local persistence directory for D1 so tests can
-// fully reset the DB by wiping this folder.
+// Dedicated local persistence directory for the D1 test database.
+// Wiping this folder guarantees a clean DB for each run.
 const PERSIST_DIR = ".wrangler/test-db";
 const PERSIST_DIR_ABS = path.join(projectRoot, PERSIST_DIR);
 
+// Port and URL where Wrangler dev server will listen for tests.
 const DEV_PORT = process.env.WRANGLER_DEV_PORT ?? "8788";
 const DEV_URL = `http://127.0.0.1:${DEV_PORT}`;
 
@@ -27,6 +32,7 @@ function spawnProcess(command, args, options = {}) {
   return child;
 }
 
+// Poll the given URL until the server responds or timeout is reached.
 async function waitForServer(url, timeoutMs = 30000, intervalMs = 500) {
   const start = Date.now();
 
@@ -50,6 +56,8 @@ async function waitForServer(url, timeoutMs = 30000, intervalMs = 500) {
   throw new Error(`Server at ${url} did not become ready within ${timeoutMs}ms`);
 }
 
+// Convenience wrapper around spawnProcess that resolves/rejects
+// based on the child process exit code.
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawnProcess(command, args, options);
@@ -62,6 +70,7 @@ function run(command, args, options = {}) {
 }
 
 async function main() {
+  // 1) Start from a clean local D1 database.
   console.log("Wiping local D1 test database files (if any)...");
 
   try {
@@ -72,8 +81,9 @@ async function main() {
     throw new Error("Wiping local test DB failed");
   }
 
+  // 2) Apply all D1 migrations into the fresh local DB.
   console.log("Applying D1 migrations for local test database (default env)...");
-  // Run migrations non-interactively by piping "y" to Wrangler's prompt
+  // Run migrations non-interactively by piping "y" to Wrangler's prompt.
   const migrate = spawn("wrangler", [
     "d1",
     "migrations",
@@ -98,6 +108,7 @@ async function main() {
     });
   });
 
+  // 3) Start Wrangler Pages dev server backed by this DB.
   console.log("Starting Wrangler Pages dev server for tests (local default env)...");
 
   const wranglerArgs = [
@@ -113,6 +124,7 @@ async function main() {
 
   let cleanedUp = false;
 
+  // Ensure the Wrangler dev process is cleaned up on exit/signals.
   const cleanup = () => {
     if (cleanedUp) return;
     cleanedUp = true;
@@ -134,14 +146,14 @@ async function main() {
   process.on("SIGTERM", cleanup);
   process.on("exit", cleanup);
 
+  // 4) Wait until the dev server is reachable before testing.
   await waitForServer(DEV_URL);
   console.log(
     `Wrangler dev server (test env) is ready at ${DEV_URL}, running all tests...`,
   );
 
   try {
-    // Only run the dedicated integration tests that rely on
-    // Wrangler + D1, not the whole suite.
+    // 5) Run only the integration tests that rely on Wrangler + D1.
     await run("npm", ["run", "test:integration:vitest"], { env: process.env });
 
     process.exitCode = 0;

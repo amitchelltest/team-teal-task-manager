@@ -1,14 +1,7 @@
-import React, { act } from "react";
+import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { createRoot } from "react-dom/client";
 import TaskCard from "../../src/components/TaskCard.jsx";
-
-// Tell React that this test environment supports act(), so it
-// won't emit "current testing environment is not configured" warnings.
-// Vitest's jsdom environment does support React DOM rendering.
-// See https://react.dev/warnings/react-dom-test-utils
-// eslint-disable-next-line no-undef
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+import { renderWithRoot, click } from "../test-utils/reactTestUtils.jsx";
 
 const navigateMock = vi.fn();
 
@@ -20,13 +13,7 @@ vi.mock("react-router-dom", () => {
 });
 
 function renderTaskCard(task) {
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-  act(() => {
-    root.render(<TaskCard task={task} />);
-  });
-  return { container, root };
+  return renderWithRoot(<TaskCard task={task} />);
 }
 
 describe("TaskCard", () => {
@@ -145,7 +132,7 @@ describe("TaskCard", () => {
     }
   });
 
-  it("navigates to task details when card is clicked", () => {
+  it("navigates to task details when card is clicked", async () => {
     const task = {
       id: 123,
       title: "Clickable task",
@@ -158,9 +145,7 @@ describe("TaskCard", () => {
     const card = container.querySelector(".task-card");
     expect(card).not.toBeNull();
 
-    act(() => {
-      card.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
+    await click(card);
 
     expect(navigateMock).toHaveBeenCalledTimes(1);
     expect(navigateMock).toHaveBeenCalledWith("/task/123");

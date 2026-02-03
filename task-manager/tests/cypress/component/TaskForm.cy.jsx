@@ -1,26 +1,6 @@
 /// <reference types="cypress" />
 
-import React from "react";
-import TaskForm from "../../../src/components/TaskForm.jsx";
-
-// Helper to mount TaskForm with some default props
-function mountTaskForm(props = {}) {
-  const onSuccess = cy.stub().as("onSuccess");
-  const onCancel = cy.stub().as("onCancel");
-
-  cy.mount(
-    <TaskForm
-      projectId={1}
-      createdBy="alice"
-      modifiedBy="alice"
-      {...props}
-      onSuccess={onSuccess}
-      onCancel={onCancel}
-    />
-  );
-
-  return { onSuccess, onCancel };
-}
+import { mountTaskForm } from "../support/component.jsx";
 
 describe("TaskForm component", () => {
   it("creates a new task and links it to a column when columnId is provided", () => {
