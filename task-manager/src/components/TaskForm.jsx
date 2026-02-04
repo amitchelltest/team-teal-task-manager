@@ -30,9 +30,11 @@ import "./taskform.css";
  * - onSuccess(task): called after a successful create or update.
  * - onCancel(): called when the user clicks Cancel; parent usually hides the modal.
  *
- * TODO: We should show the Assignee and Report inputs as dropdowns of eligable users
+ * TODO: We should show the Assignee and Report inputs as dropdowns of eligible users
  *
- * TODO: Make sure this works once the backend is implemented
+ * TODO: Eventually we may want to have this take in the projectId as a parameter
+ * (where projectId is the current project view the task creation occurs on)
+ * and use the columnId as null for backlog, only moving it to 1 upon starting a sprint
  *
  */
 const EMPTY_FORM = {
@@ -50,7 +52,7 @@ export default function TaskForm({
   projectId = null,
   createdBy = null,
   modifiedBy = null,
-  columnId = null,
+  columnId = 1,
   onSuccess,
   onCancel,
 }) {
@@ -76,16 +78,6 @@ export default function TaskForm({
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    });
-    const data = await resp.json().catch(() => null);
-    return { resp, data };
-  }
-
-  async function createColumnTaskLinkApi(columnId, taskId) {
-    const resp = await fetch("/api/column_tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ column_id: columnId, task_id: taskId }),
     });
     const data = await resp.json().catch(() => null);
     return { resp, data };
@@ -170,6 +162,9 @@ export default function TaskForm({
     if (modifiedBy != null) {
       payload.modified_by = modifiedBy;
     }
+    if (columnId != null && taskId == null) {
+      payload.column_id = columnId;
+    }
 
     try {
       const isEdit = taskId != null;
@@ -192,18 +187,6 @@ export default function TaskForm({
           return;
         }
         data = body;
-
-        if (columnId != null && data && data.id != null) {
-          const { resp: ctResp, data: ctBody } = await createColumnTaskLinkApi(
-            columnId,
-            data.id,
-          );
-          if (!ctResp.ok) {
-            console.error("column_task create failed", ctBody);
-            message =
-              "Task created, but failed to link to column (API not ready or error).";
-          }
-        }
       }
 
       if (!isEdit) {
@@ -237,10 +220,14 @@ export default function TaskForm({
         <form onSubmit={handleSubmit} className="task-form">
           <h1>{titleText}</h1>
 
-          {loadingExisting && <p className="task-form__status">Loading task…</p>}
+          {loadingExisting && (
+            <p className="task-form__status">Loading task…</p>
+          )}
           {loadError && <p className="task-form__status">{loadError}</p>}
 
-          {submitMessage && <p className="task-form__status">{submitMessage}</p>}
+          {submitMessage && (
+            <p className="task-form__status">{submitMessage}</p>
+          )}
 
           <div className="task-form__grid">
             <label>
@@ -323,7 +310,11 @@ export default function TaskForm({
 
           <div className="task-form__actions">
             <button type="submit" disabled={submitting}>
-              {submitting ? "Saving..." : isEdit ? "Save Changes" : "Create Task"}
+              {submitting
+                ? "Saving..."
+                : isEdit
+                  ? "Save Changes"
+                  : "Create Task"}
             </button>
             {onCancel && (
               <button type="button" onClick={onCancel} disabled={submitting}>

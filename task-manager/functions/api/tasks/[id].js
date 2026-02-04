@@ -7,6 +7,7 @@ const handlers = makeCrudHandlers({
   // these should maybe change -- a lot of these should be checked application-level
   allowedColumns: [
     "project_id",
+    "column_id",
     "sprint_id",
     "reporter_id",
     "assignee_id",
@@ -17,6 +18,7 @@ const handlers = makeCrudHandlers({
     "start_date",
     "end_date",
     "updated_at",
+    "position",
   ],
   dbEnvVar: "cf_db",
   orderBy: "id",

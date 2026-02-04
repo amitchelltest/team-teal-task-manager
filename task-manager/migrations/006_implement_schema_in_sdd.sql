@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS Sprints (
 );
 
 -- create COLUMNS table
+DROP TABLE IF EXISTS Columns;
 CREATE TABLE IF NOT EXISTS Columns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -48,9 +49,11 @@ CREATE TABLE IF NOT EXISTS Columns (
 );
 
 -- create TASKS table
+DROP TABLE IF EXISTS Tasks;
 CREATE TABLE IF NOT EXISTS Tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
+    column_id INTEGER,
     sprint_id INTEGER,
     reporter_id INTEGER NOT NULL,
     assignee_id INTEGER,
@@ -62,7 +65,9 @@ CREATE TABLE IF NOT EXISTS Tasks (
     due_date DATE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    position INTEGER,
     FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE,
+    FOREIGN KEY (column_id) REFERENCES Columns(id) ON DELETE SET NULL,
     FOREIGN KEY (sprint_id) REFERENCES Sprints(id) ON DELETE SET NULL,
     FOREIGN KEY (reporter_id) REFERENCES Users(id) ON DELETE RESTRICT,
     FOREIGN KEY (assignee_id) REFERENCES Users(id) ON DELETE SET NULL,
@@ -72,7 +77,7 @@ CREATE TABLE IF NOT EXISTS Tasks (
 
 -- Tasks: ensure start_date never exceeds due_date...
 -- ...on insert
-CREATE TRIGGER validate_task_dates_insert
+CREATE TRIGGER IF NOT EXISTS validate_task_dates_insert
 BEFORE INSERT ON Tasks
 FOR EACH ROW
 WHEN NEW.start_date IS NOT NULL 
@@ -83,7 +88,7 @@ SELECT RAISE(ABORT, 'start_date must be <= due_date');
 END;
 
 -- ...on update
-CREATE TRIGGER validate_task_dates_update
+CREATE TRIGGER IF NOT EXISTS validate_task_dates_update
 BEFORE UPDATE ON Tasks
 FOR EACH ROW
 WHEN NEW.start_date IS NOT NULL 
@@ -95,7 +100,7 @@ END;
 
 -- Sprints: ensure start_date never exceeds end_date...
 -- ...on insert
-CREATE TRIGGER validate_sprint_dates_insert
+CREATE TRIGGER IF NOT EXISTS validate_sprint_dates_insert
 BEFORE INSERT ON Sprints
 FOR EACH ROW
 WHEN NEW.start_date IS NOT NULL 
@@ -106,7 +111,7 @@ SELECT RAISE(ABORT, 'start_date must be <= end_date');
 END;
 
 -- ...on update
-CREATE TRIGGER validate_sprint_dates_update
+CREATE TRIGGER IF NOT EXISTS validate_sprint_dates_update
 BEFORE UPDATE ON Sprints
 FOR EACH ROW
 WHEN NEW.start_date IS NOT NULL 
@@ -116,18 +121,10 @@ BEGIN
 SELECT RAISE(ABORT, 'start_date must be <= end_date');
 END;
 
--- create COLUMN TASKS junction
-CREATE TABLE IF NOT EXISTS Column_Tasks (
-    task_id INTEGER NOT NULL,
-    column_id INTEGER NOT NULL,
-    position INTEGER NOT NULL,
-    PRIMARY KEY (task_id, column_id),
-    FOREIGN KEY (task_id) REFERENCES Tasks(id) ON DELETE CASCADE,
-    FOREIGN KEY (column_id) REFERENCES Columns(id) ON DELETE CASCADE
-);
+DROP TABLE IF EXISTS Column_Tasks;
 
 -- create COMMENTS table
-CREATE TABLE Comments (
+CREATE TABLE IF NOT EXISTS Comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id INTEGER NOT NULL,
     created_by INTEGER NOT NULL,
@@ -140,7 +137,7 @@ CREATE TABLE Comments (
 
 -- Triggers
 -- When a row is updated, automatically update its updated_at field to current timestamp
-CREATE TRIGGER update_comments_updated_at
+CREATE TRIGGER IF NOT EXISTS update_comments_updated_at
 AFTER UPDATE ON Comments
 FOR EACH ROW
 WHEN NEW.updated_at = OLD.updated_at
@@ -151,9 +148,9 @@ BEGIN
 END;
 
 -- maybe helpful indices
-CREATE INDEX idx_projects_created_by ON Projects(created_by);
-CREATE INDEX idx_sprints_project_id ON Sprints(project_id);
-CREATE INDEX idx_tasks_project_id ON Tasks(project_id);
-CREATE INDEX idx_tasks_sprint_id ON Tasks(sprint_id);
-CREATE INDEX idx_tasks_assignee_id ON Tasks(assignee_id);
-CREATE INDEX idx_comments_task_id ON Comments(task_id);
+CREATE INDEX IF NOT EXISTS idx_projects_created_by ON Projects(created_by);
+CREATE INDEX IF NOT EXISTS idx_sprints_project_id ON Sprints(project_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON Tasks(project_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_sprint_id ON Tasks(sprint_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_assignee_id ON Tasks(assignee_id);
+CREATE INDEX IF NOT EXISTS idx_comments_task_id ON Comments(task_id);
