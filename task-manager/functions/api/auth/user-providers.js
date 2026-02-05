@@ -1,4 +1,4 @@
-import { makeCrudHandlers } from "./helpers.js";
+import { makeCrudHandlers } from "../helpers.js";
 
 const columnHandlers = makeCrudHandlers({
   table: "User_Providers",
