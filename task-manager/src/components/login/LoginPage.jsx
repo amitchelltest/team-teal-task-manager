@@ -4,12 +4,12 @@ import { GoogleSignInButton } from './GoogleSignInButton';
 export default function LoginPage() {
   const authURLParams = new URLSearchParams({
             // todo: remove fallbacks once implemented
-            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "459719729310-mf1vkob8e7ljhcn44obrujolbsfpil27.apps.googleusercontent.com",
-            redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI || "https://joel-logon-component-tt2s-39.team-teal-task-manager.pages.dev/api/auth/callback",
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+            redirect_uri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
             response_type: 'code',
             scope: 'openid email profile'
         })
-  const authURL = new URL(import.meta.env.VITE_GOOGLE_AUTH_URL || "https://accounts.google.com/o/oauth2/auth")
+  const authURL = new URL(import.meta.env.VITE_GOOGLE_AUTH_URL)
   authURL.search = authURLParams.toString()
 
   return (
