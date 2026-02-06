@@ -69,10 +69,9 @@ export async function onRequest({ request, env }) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                id: userInfoData.sub ?? null,
                 user_id: userData.id,
+                provider_user_id: userInfoData.sub ?? null,
                 provider: "google",
-                access_token: tokenData.access_token,
                 refresh_token: tokenData.refresh_token,
                 token_expires_at: expiresAt,
             }),
