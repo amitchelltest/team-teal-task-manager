@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import TaskDetail from "./pages/TaskDetail.jsx";
 import LoginButton from "./components/login/LoginButton.jsx";
+import LoginPage from "./components/login/LoginPage.jsx"
 
 export default function App() {
   return (
@@ -24,6 +25,10 @@ export default function App() {
           Adjust the id if your seed data uses a different task id.
         */}
         <Route path="/task-demo" element={<Navigate to="/task/1" replace />} />
+        {/*
+          Login page
+        */}
+        <Route path="/login" element={<LoginPage />}/>
       </Routes>
       <LoginButton />
     </>
