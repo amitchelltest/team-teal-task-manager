@@ -131,4 +131,5 @@ export async function onRequest({ request, env }) {
     if (debug) return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: { "Content-Type": "application/json" } });
     return Response.redirect("/", 302);
   }
+  return Response.redirect("/", 302);
 }
