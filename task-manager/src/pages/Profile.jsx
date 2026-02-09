@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./profile.css";
 
 //Current_User_1 will need to be replaces with the logged in user. 
 
@@ -43,13 +44,16 @@ function Profile() {
     }
 
     return (
-        <div>
+        <div className="profile-page">
+            <header>
+                User Profile
+            </header>
             <h2>
                 {user.display_name}
             </h2>
             <h3>
-                {user.email}
-                {user.timezone}
+                <p>Email: {user.email}</p>
+                <p>Timezone: {user.timezone}</p>
             </h3>
         </div>
     );

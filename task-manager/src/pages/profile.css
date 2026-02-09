@@ -1,0 +1,29 @@
+/* Profile.css */
+/* To keep everything looking the same, I borrowed alot of the css from taskdetail.css -Jay */
+
+.profile-page {
+  max-width: 800px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+}
+
+.profile-page header {
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    text-align: left;
+}
+
+.profile-page h2 {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.profile-page h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
