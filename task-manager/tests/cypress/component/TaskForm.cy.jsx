@@ -8,8 +8,7 @@ describe("TaskForm component", () => {
       expect(req.body).to.include({
         title: "New Cypress Task",
         project_id: 1,
-        created_by: "alice",
-        modified_by: "alice",
+        // created_by and modified_by will be derived from currentUser
       });
 
       req.reply({
@@ -60,8 +59,7 @@ describe("TaskForm component", () => {
         reporter_id: 2,
         assignee_id: 3,
         project_id: 1,
-        created_by: "alice",
-        modified_by: "alice",
+        // created_by and modified_by will be derived from currentUser
       });
 
       req.reply({
@@ -108,8 +106,7 @@ describe("TaskForm component", () => {
       expect(req.body).to.include({
         title: "Task without column",
         project_id: 1,
-        created_by: "alice",
-        modified_by: "alice",
+        // created_by and modified_by will be derived from currentUser
       });
 
       req.reply({

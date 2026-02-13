@@ -2,21 +2,22 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import TaskForm from "../../src/components/TaskForm.jsx";
 import { renderWithRoot, click } from "../test-utils/reactTestUtils.jsx";
+import { UsersProvider } from "../../src/contexts/UsersContext.jsx";
 
 function renderTaskForm(props = {}) {
   const onSuccess = props.onSuccess ?? vi.fn();
   const onCancel = props.onCancel ?? vi.fn();
 
   const { container, root } = renderWithRoot(
-    <TaskForm
-      projectId={1}
-      createdBy="alice"
-      modifiedBy="alice"
-      columnId={props.columnId ?? null}
-      taskId={props.taskId ?? null}
-      onSuccess={onSuccess}
-      onCancel={onCancel}
-    />,
+    <UsersProvider>
+      <TaskForm
+        projectId={1}
+        columnId={props.columnId ?? null}
+        taskId={props.taskId ?? null}
+        onSuccess={onSuccess}
+        onCancel={onCancel}
+      />
+    </UsersProvider>,
   );
 
   return { container, root, onSuccess, onCancel };
@@ -52,7 +53,9 @@ describe("TaskForm (Vitest)", () => {
     await click(submitButton);
 
     expect(container.textContent).toContain("This field is required");
-    expect(fetchMock).not.toHaveBeenCalled();
+    // UsersProvider will fetch /api/users on mount, but submitting an
+    // invalid form should not trigger the task API.
+    expect(fetchMock).not.toHaveBeenCalledWith("/api/tasks");
   });
 
   it("invokes onCancel when Cancel button is clicked", async () => {

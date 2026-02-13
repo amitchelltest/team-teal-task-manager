@@ -43,7 +43,7 @@ export default function TaskDetail() {
   // Project name for display
   const [projectName, setProjectName] = useState(null);
 
-  const { users } = useUsers();
+  const { users, currentUser } = useUsers();
 
   function getUserLabel(userId) {
     if (userId == null) return null;
@@ -329,7 +329,7 @@ export default function TaskDetail() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 task_id: id,
-                created_by: 1,     // TODO: replace this with current user when we add user data
+                created_by: currentUser?.id ?? null,
                 content: newComment
               })
             });
@@ -352,7 +352,6 @@ export default function TaskDetail() {
         <TaskForm
           taskId={id}
           projectId={project_id != null ? project_id : null}
-          modifiedBy={1}
           columnsForStatus={columnsForStatus}
           onSuccess={(updatedTask) => {
             if (updatedTask) {

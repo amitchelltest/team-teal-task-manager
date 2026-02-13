@@ -53,8 +53,6 @@ const EMPTY_FORM = {
 export default function TaskForm({
   taskId = null,
   projectId = null, //TODO: auto-populate this depending on where button is clicked
-  createdBy = null, //TODO: get current user
-  modifiedBy = null, //TODO: get current user
   // Optional starting column when launching from a specific column; null means Backlog
   columnId = null,
   // List of columns for the current project board, used to populate the Status dropdown
@@ -62,7 +60,7 @@ export default function TaskForm({
   onSuccess,
   onCancel,
 }) {
-  const { users, loading: usersLoading, error: usersError } = useUsers();
+  const { users, loading: usersLoading, error: usersError, currentUser } = useUsers();
   // Start with an empty form; the optional columnId prop will be applied
   // as the default Status via an effect in create mode.
   const [form, setForm] = useState(() => ({
@@ -136,6 +134,18 @@ export default function TaskForm({
     }));
   }, [columnId, taskId]);
 
+  // When creating a new task and once a current user is available,
+  // default the reporter (and optionally assignee) to that user if
+  // they haven't already been set.
+  useEffect(() => {
+    if (taskId || !currentUser) return; // only apply in create mode
+    setForm((prev) => ({
+      ...prev,
+      reporter_id: prev.reporter_id || String(currentUser.id),
+      assignee_id: prev.assignee_id || String(currentUser.id),
+    }));
+  }, [taskId, currentUser]);
+
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -181,12 +191,6 @@ export default function TaskForm({
     if (projectId != null) {
       payload.project_id = projectId;
     }
-    if (createdBy != null) {
-      payload.created_by = createdBy;
-    }
-    if (modifiedBy != null) {
-      payload.modified_by = modifiedBy;
-    }
 
     // Status / column handling:
     // - Backlog: no column_id sent (form.column_id is "" or falsy)
@@ -197,6 +201,12 @@ export default function TaskForm({
 
     try {
       const isEdit = taskId != null;
+
+      // Use currentUser for auditing fields.
+      if (!isEdit) {
+        payload.created_by = currentUser?.id ?? null;
+      }
+      payload.modified_by = currentUser?.id ?? null;
       let data = null;
       let message = isEdit ? "Task updated." : "Task created.";
 
