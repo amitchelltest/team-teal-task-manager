@@ -40,6 +40,8 @@ export default function TaskDetail() {
   const [showEditModal, setShowEditModal] = useState(false);
   // Columns used for the Status dropdown in the edit form
   const [columnsForStatus, setColumnsForStatus] = useState([]);
+  // Project name for display
+  const [projectName, setProjectName] = useState(null);
 
   const { users } = useUsers();
 
@@ -145,6 +147,7 @@ export default function TaskDetail() {
     assignee_id,
     created_by,
     modified_by,
+    column_id,
     start_date,
     due_date,
     created_at,
@@ -152,6 +155,47 @@ export default function TaskDetail() {
   } = task || { id };
 
   const isOverdue = isDateOverdue(due_date);
+
+  // Load the project name once the task (and its project_id) are available
+  useEffect(() => {
+    async function loadProjectName(projectId) {
+      try {
+        const res = await fetch(`/api/projects/${projectId}`);
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data || data.error) {
+          console.error("API error loading project for task detail", data);
+          setProjectName(null);
+        } else {
+          setProjectName(data.name || null);
+        }
+      } catch (err) {
+        console.error("Fetch error loading project for task detail", err);
+        setProjectName(null);
+      }
+    }
+
+    if (task && task.project_id != null) {
+      loadProjectName(task.project_id);
+    } else {
+      setProjectName(null);
+    }
+  }, [task]);
+
+  let statusLabel = null;
+  if (task) {
+    if (column_id == null) {
+      statusLabel = "Backlog";
+    } else {
+      const matchingColumn = columnsForStatus.find(
+        (col) => Number(col.id) === Number(column_id),
+      );
+      if (matchingColumn) {
+        statusLabel = matchingColumn.name || matchingColumn.title || `Column ${column_id}`;
+      } else {
+        statusLabel = `Column ${column_id}`;
+      }
+    }
+  }
 
   return (
     <div className="task-detail-page">
@@ -174,7 +218,14 @@ export default function TaskDetail() {
           {project_id != null && (
             <div>
               <dt>Project</dt>
-              <dd>{project_id}</dd>
+              <dd>{projectName || project_id}</dd>
+            </div>
+          )}
+
+          {statusLabel && (
+            <div>
+              <dt>Status</dt>
+              <dd>{statusLabel}</dd>
             </div>
           )}
           {sprint_id != null && (
