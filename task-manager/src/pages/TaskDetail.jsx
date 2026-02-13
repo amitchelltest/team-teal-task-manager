@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { formatDate, isDateOverdue } from "../utils/dateHelpers.js";
+import TaskForm from "../components/TaskForm.jsx";
 import "./taskdetail.css";
 
 /**
@@ -34,6 +35,10 @@ export default function TaskDetail() {
   const [commentsError, setCommentsError] = useState(null);
   // Content of a new comment that is being written
   const [newComment, setNewComment] = useState("");
+  // Controls whether the edit modal is open
+  const [showEditModal, setShowEditModal] = useState(false);
+  // Columns used for the Status dropdown in the edit form
+  const [columnsForStatus, setColumnsForStatus] = useState([]);
 
   useEffect(() => {
     async function loadTask() {
@@ -89,6 +94,37 @@ export default function TaskDetail() {
     loadComments();
   }, [id]);
 
+  // Load columns for the task's project so the Status dropdown
+  // in the TaskForm can show the available columns when editing.
+  useEffect(() => {
+    async function loadColumnsForProject(projectId) {
+      try {
+        const res = await fetch(`/api/columns?project_id=${projectId}`);
+        const data = await res.json().catch(() => null);
+        if (!Array.isArray(data) || data.error) {
+          console.error("API error loading columns for task detail", data);
+          setColumnsForStatus([]);
+        } else {
+          const columns = data.map((col) => ({
+            ...col,
+            title: col.name,
+            tasks: [],
+          }));
+          setColumnsForStatus(columns);
+        }
+      } catch (err) {
+        console.error("Fetch error loading columns for task detail", err);
+        setColumnsForStatus([]);
+      }
+    }
+
+    if (task && task.project_id != null) {
+      loadColumnsForProject(task.project_id);
+    } else {
+      setColumnsForStatus([]);
+    }
+  }, [task]);
+
 
   const {
     title,
@@ -114,6 +150,10 @@ export default function TaskDetail() {
       {error && <p>{error}</p>}
 
       <h1>{title || `Task ${id}`}</h1>
+
+      <button type="button" onClick={() => setShowEditModal(true)}>
+        Edit Task
+      </button>
 
       {description && <p>{description}</p>}
 
@@ -227,7 +267,7 @@ export default function TaskDetail() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                task_id: id,       
+                task_id: id,
                 created_by: 1,     // TODO: replace this with current user when we add user data
                 content: newComment
               })
@@ -246,6 +286,22 @@ export default function TaskDetail() {
           Add Comment
         </button>
       </section>
+
+      {showEditModal && (
+        <TaskForm
+          taskId={id}
+          projectId={project_id != null ? project_id : null}
+          modifiedBy={1}
+          columnsForStatus={columnsForStatus}
+          onSuccess={(updatedTask) => {
+            if (updatedTask) {
+              setTask(updatedTask);
+            }
+            setShowEditModal(false);
+          }}
+          onCancel={() => setShowEditModal(false)}
+        />
+      )}
     </div>
   );
 }
