@@ -4,12 +4,19 @@ import { mountTaskForm } from "../support/component.jsx";
 
 describe("TaskForm component", () => {
   it("creates a new task and links it to a column when columnId is provided", () => {
+    cy.intercept("GET", "/api/users", {
+      statusCode: 200,
+      body: [{ id: 7, display_name: "Cypress User" }],
+    }).as("getUsers");
+
     cy.intercept("POST", "/api/tasks", (req) => {
       expect(req.body).to.include({
         title: "New Cypress Task",
         project_id: 1,
-        // created_by and modified_by will be derived from currentUser
       });
+
+      expect(req.body.created_by).to.equal(7);
+      expect(req.body.modified_by).to.equal(7);
 
       req.reply({
         statusCode: 200,
@@ -37,6 +44,11 @@ describe("TaskForm component", () => {
   it("loads an existing task in edit mode and saves changes", () => {
     const taskId = 42;
 
+    cy.intercept("GET", "/api/users", {
+      statusCode: 200,
+      body: [{ id: 7, display_name: "Cypress User" }],
+    }).as("getUsers");
+
     cy.intercept("GET", "**/api/tasks/*", {
       statusCode: 200,
       body: {
@@ -59,8 +71,10 @@ describe("TaskForm component", () => {
         reporter_id: 2,
         assignee_id: 3,
         project_id: 1,
-        // created_by and modified_by will be derived from currentUser
       });
+
+      expect(req.body.modified_by).to.equal(7);
+      expect(req.body).to.not.have.property("created_by");
 
       req.reply({
         statusCode: 200,
@@ -102,12 +116,19 @@ describe("TaskForm component", () => {
   });
 
   it("creates a new task without columnId and does not link to column", () => {
+    cy.intercept("GET", "/api/users", {
+      statusCode: 200,
+      body: [{ id: 7, display_name: "Cypress User" }],
+    }).as("getUsers");
+
     cy.intercept("POST", "/api/tasks", (req) => {
       expect(req.body).to.include({
         title: "Task without column",
         project_id: 1,
-        // created_by and modified_by will be derived from currentUser
       });
+
+      expect(req.body.created_by).to.equal(7);
+      expect(req.body.modified_by).to.equal(7);
 
       req.reply({
         statusCode: 200,

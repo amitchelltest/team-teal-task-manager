@@ -1,7 +1,7 @@
-import React from "react";
+import React, { act } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import TaskForm from "../../src/components/TaskForm.jsx";
-import { renderWithRoot, click } from "../test-utils/reactTestUtils.jsx";
+import { renderWithRoot, click, input } from "../test-utils/reactTestUtils.jsx";
 import { UsersProvider } from "../../src/contexts/UsersContext.jsx";
 
 function renderTaskForm(props = {}) {
@@ -23,6 +23,12 @@ function renderTaskForm(props = {}) {
   return { container, root, onSuccess, onCancel };
 }
 
+async function flushAsync() {
+  await act(async () => {
+    await Promise.resolve();
+  });
+}
+
 describe("TaskForm (Vitest)", () => {
   let originalFetch;
   let fetchMock;
@@ -31,10 +37,26 @@ describe("TaskForm (Vitest)", () => {
   beforeEach(() => {
     originalBodyHTML = document.body.innerHTML;
     originalFetch = global.fetch;
-    fetchMock = vi.fn(async () => ({
-      ok: true,
-      json: async () => ({ id: 1, title: "Created via test" }),
-    }));
+    fetchMock = vi.fn(async (url, options = {}) => {
+      if (url === "/api/users") {
+        return {
+          ok: true,
+          json: async () => [{ id: 1, display_name: "Default User" }],
+        };
+      }
+
+      if (url === "/api/tasks" || String(url).startsWith("/api/tasks/")) {
+        return {
+          ok: true,
+          json: async () => ({ id: 1, title: "Created via test" }),
+        };
+      }
+
+      return {
+        ok: true,
+        json: async () => ({}),
+      };
+    });
     global.fetch = fetchMock;
   });
 
@@ -71,5 +93,71 @@ describe("TaskForm (Vitest)", () => {
     await click(cancelButton);
 
     expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses currentUser for modified_by and does not send created_by when editing a task", async () => {
+    const taskId = 42;
+    let updatedPayload = null;
+
+    fetchMock.mockImplementation(async (url, options = {}) => {
+      if (url === "/api/users") {
+        return {
+          ok: true,
+          json: async () => [{ id: 7, display_name: "Test User" }],
+        };
+      }
+
+      if (url === `/api/tasks/${taskId}` && (!options.method || options.method === "GET")) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: taskId,
+            title: "Existing Task",
+            description: "Existing description",
+            sprint_id: 1,
+            reporter_id: 2,
+            assignee_id: 3,
+            start_date: "2025-01-01",
+            due_date: "2025-01-10",
+            created_by: 1,
+          }),
+        };
+      }
+
+      if (url === `/api/tasks/${taskId}` && options.method === "PUT") {
+        const body = JSON.parse(options.body);
+        updatedPayload = body;
+        return {
+          ok: true,
+          json: async () => ({ id: taskId, ...body }),
+        };
+      }
+
+      return {
+        ok: true,
+        json: async () => ({}),
+      };
+    });
+
+    const { container, onSuccess } = renderTaskForm({ taskId });
+
+    await flushAsync();
+
+    const titleInput = container.querySelector("input[name='title']");
+    expect(titleInput).not.toBeNull();
+    expect(titleInput.value).toBe("Existing Task");
+
+    input(titleInput, "Updated Task Title");
+
+    const submitButton = container.querySelector("button[type='submit']");
+    expect(submitButton).not.toBeNull();
+
+    await click(submitButton);
+    await flushAsync();
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+
+    expect(updatedPayload).not.toBeNull();
+    expect(updatedPayload.modified_by).toBe(7);
+    expect("created_by" in updatedPayload).toBe(false);
   });
 });
