@@ -3,10 +3,10 @@
 export const USER_ROLES = Object.freeze({
     ADMIN: "admin",
     DEVELOPER: "developer",
-    CLINICIANS: "clinician",
+    CLINICIAN: "clinician",
 });
 
-// An helper array to check for user values
+// A helper array to check for user values
 export const USER_ROLE_VALUES = Object.freeze(Object.values(USER_ROLES));
 
 // Checks if a role is a valid role. 

@@ -6,6 +6,8 @@ import {
 	buildCorsHeaders,
 } from "./helpers.js";
 
+import { isValidUserRole } from "./constants/roles.js";
+
 const config = {
 	table: "Users",
 	primaryKey: "id",
@@ -45,9 +47,8 @@ export async function onRequestPost(context) {
 
 		const body = await parseJson(request);
 
-		// Only accept admin, developers, or clinicians for role type
-		const allowedRoles = ["admin", "clinician", "developer"]
-		if (body.role !== undefined && !allowedRoles.includes(body.role) ) {
+		// Check if role is valid
+		if (body.role !== undefined && !isValidUserRole(body.role) ) {
 			return new Response(JSON.stringify({ error: "Unknown role." }), {
 				status: 400,
 				headers: CORS
