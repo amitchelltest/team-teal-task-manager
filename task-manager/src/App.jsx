@@ -2,6 +2,7 @@ import "./App.css";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import TaskDetail from "./pages/TaskDetail.jsx";
+import Profile from "./pages/Profile.jsx";
 import LoginButton from "./components/login/LoginButton.jsx";
 import LoginPage from "./components/login/LoginPage.jsx";
 import UserManagement from "./pages/UserManagement.jsx";
@@ -26,6 +27,12 @@ export default function App() {
           Adjust the id if your seed data uses a different task id.
         */}
         <Route path="/task-demo" element={<Navigate to="/task/1" replace />} />
+         
+        {/*
+          Profile route
+        */}
+        <Route path="/profile" element={<Profile />} />
+          
         {/*
           Login page
         */}
