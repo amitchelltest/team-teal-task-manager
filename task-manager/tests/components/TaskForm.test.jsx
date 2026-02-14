@@ -37,7 +37,7 @@ describe("TaskForm (Vitest)", () => {
   beforeEach(() => {
     originalBodyHTML = document.body.innerHTML;
     originalFetch = global.fetch;
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       if (url === "/api/users") {
         return {
           ok: true,
