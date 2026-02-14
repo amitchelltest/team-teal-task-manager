@@ -26,10 +26,16 @@ export default function ProjectSidebar() {
   }, []);
 
   return (
-    <ProjectSelector
-      projects={projects}
-      selectedProjectId={selectedProjectId}
-      onSelectProject={setSelectedProjectId}
-    />
+    <>
+      {loading ? (
+        <p>Loading Sidebar...</p>
+      ) : (
+        <ProjectSelector
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+          onSelectProject={setSelectedProjectId}
+        />
+      )}
+    </>
   )
 }
