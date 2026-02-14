@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import "./taskcard.css";
 import { formatDate, isDateOverdue } from "../utils/dateHelpers.js";
 import { Draggable } from "@hello-pangea/dnd";
 import { useUsers } from "../contexts/UsersContext.jsx";
+import TimeZone from "./TimeZone.jsx";
 
 
 /**
@@ -18,6 +20,8 @@ export default function TaskCard({ task, index }) {
   const navigate = useNavigate();
 
   const { users } = useUsers();
+  const [showAssigneeTime, setShowAssigneeTime] = useState(false);
+  const [showReporterTime, setShowReporterTime] = useState(false);
 
   if (!task || task.id == null) {
     return null;
@@ -33,6 +37,9 @@ export default function TaskCard({ task, index }) {
   } = task;
 
   const isOverdue = isDateOverdue(due_date);
+
+  const assigneeUser = assignee_id != null ? users.find((u) => u.id === Number(assignee_id)) : null;
+  const reporterUser = reporter_id != null ? users.find((u) => u.id === Number(reporter_id)) : null;
 
   function getUserLabel(userId) {
     if (userId == null) return null;
@@ -67,13 +74,37 @@ export default function TaskCard({ task, index }) {
         {assignee_id != null && (
           <div>
             <dt>Assignee</dt>
-            <dd>{getUserLabel(assignee_id)}</dd>
+            <dd className="relative">
+              <span
+                onMouseEnter={() => setShowAssigneeTime(true)}
+                onMouseLeave={() => setShowAssigneeTime(false)}
+              >
+                {getUserLabel(assignee_id)}
+              </span>
+              {showAssigneeTime && (
+                <div>
+                  <TimeZone user={assigneeUser} />
+                </div>
+              )}
+            </dd>
           </div>
         )}
         {reporter_id != null && (
           <div>
             <dt>Reporter</dt>
-            <dd>{getUserLabel(reporter_id)}</dd>
+            <dd className="relative">
+              <span
+                onMouseEnter={() => setShowReporterTime(true)}
+                onMouseLeave={() => setShowReporterTime(false)}
+              >
+                {getUserLabel(reporter_id)}
+              </span>
+              {showReporterTime && (
+                <div>
+                  <TimeZone user={reporterUser} />
+                </div>
+              )}
+            </dd>
           </div>
         )}
         <div className="task-card__dates-row">

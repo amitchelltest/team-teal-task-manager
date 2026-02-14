@@ -26,16 +26,14 @@ export default function TimeZone({ user }) {
     return new Intl.DateTimeFormat(undefined, options).format(date);
   };
 
-  const currentFormatted = formatDateAndTime(currentTime);
   const otherFormatted = user && user.timezone ? formatDateAndTime(currentTime, user.timezone) : null;
 
   return (
     <div>
-      <p>Current Time: {currentFormatted}</p>
       {user && (
-        <p>
-          {user.display_name}'s Time: {otherFormatted ? otherFormatted : "No time zone found"}
-        </p>
+        <div className="text-sm">
+          Time: {otherFormatted ? otherFormatted : "No time zone found"}
+        </div>
       )}
     </div>
   );
