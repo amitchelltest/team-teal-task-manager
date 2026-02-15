@@ -49,10 +49,10 @@ describe("TaskCard", () => {
 
   it("returns null when task or task.id is missing", () => {
     const { container } = renderTaskCard(null);
-    expect(container.querySelector(".task-card")).toBeNull();
+    expect(container.querySelector('[data-testid="task-card"]')).toBeNull();
 
     const { container: container2 } = renderTaskCard({});
-    expect(container2.querySelector(".task-card")).toBeNull();
+    expect(container2.querySelector('[data-testid="task-card"]')).toBeNull();
   });
 
   it("renders basic task information", () => {
@@ -69,10 +69,10 @@ describe("TaskCard", () => {
 
     const { container } = renderTaskCard(task);
 
-    const card = container.querySelector(".task-card");
+    const card = container.querySelector('[data-testid="task-card"]');
     expect(card).not.toBeNull();
 
-    expect(card.querySelector(".task-card__title").textContent).toContain(
+    expect(card.querySelector('[data-testid="task-card__title"]').textContent).toContain(
       "Example Task",
     );
 
@@ -92,7 +92,7 @@ describe("TaskCard", () => {
     };
 
     const { container } = renderTaskCard(task);
-    const descriptionEl = container.querySelector(".task-card__description");
+    const descriptionEl = container.querySelector('[data-testid="task-card__description"]');
     expect(descriptionEl).toBeNull();
     expect(container.textContent).not.toContain("This should not appear on the card");
   });
@@ -108,9 +108,9 @@ describe("TaskCard", () => {
     };
 
     const { container } = renderTaskCard(task);
-    const dueEl = container.querySelector(".task-card__due");
+    const dueEl = container.querySelector('[data-testid="task-card-due"]');
     expect(dueEl).not.toBeNull();
-    expect(dueEl.className).toContain("task-card__overdue");
+    expect(dueEl.className).toContain("text-[#ff6b6b]");
   });
 
   it("does not mark future due dates as overdue", () => {
@@ -123,9 +123,9 @@ describe("TaskCard", () => {
     };
 
     const { container } = renderTaskCard(task);
-    const dueEl = container.querySelector(".task-card__due");
+    const dueEl = container.querySelector('[data-testid="task-card-due"]');
     if (dueEl) {
-      expect(dueEl.className).not.toContain("task-card__overdue");
+      expect(dueEl.className).not.toContain("text-[#ff6b6b]");
     }
   });
 
@@ -139,7 +139,7 @@ describe("TaskCard", () => {
     };
 
     const { container } = renderTaskCard(task);
-    const card = container.querySelector(".task-card");
+    const card = container.querySelector('[data-testid="task-card"]');
     expect(card).not.toBeNull();
 
     await click(card);

@@ -83,7 +83,10 @@ describe("TaskDetail (Vitest)", () => {
     await click(addButton);
 
     const postCalls = fetchMock.mock.calls.filter(([, options = {}]) => {
-      return options.method === "POST" && String(options.body || "").includes("task_id");
+      return (
+        options.method === "POST" &&
+        String(options.body || "").includes("task_id")
+      );
     });
 
     expect(postCalls.length).toBe(0);
@@ -92,7 +95,7 @@ describe("TaskDetail (Vitest)", () => {
   it("does not post comments that are only whitespace", async () => {
     const { container } = renderTaskDetail(`/task/${taskId}`);
 
-    const textarea = container.querySelector("textarea.comments-textbox");
+    const textarea = container.querySelector('[testid="comments-textbox"]');
     const addButton = Array.from(container.querySelectorAll("button")).find(
       (btn) => btn.textContent && btn.textContent.includes("Add Comment"),
     );
@@ -105,7 +108,10 @@ describe("TaskDetail (Vitest)", () => {
     await click(addButton);
 
     const postCalls = fetchMock.mock.calls.filter(([, options = {}]) => {
-      return options.method === "POST" && String(options.body || "").includes("task_id");
+      return (
+        options.method === "POST" &&
+        String(options.body || "").includes("task_id")
+      );
     });
 
     expect(postCalls.length).toBe(0);
