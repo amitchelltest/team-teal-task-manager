@@ -9,6 +9,7 @@ import "../../../src/index.css";
 
 import TaskDetail from "../../../src/pages/TaskDetail.jsx";
 import TaskForm from "../../../src/components/TaskForm.jsx";
+import { UsersProvider } from "../../../src/contexts/UsersContext.jsx";
 import Kanban from "../../../src/components/Kanban.jsx";
 
 // Make mount available globally in Cypress tests via cy.mount
@@ -17,11 +18,13 @@ Cypress.Commands.add("mount", mount);
 // Helper to mount TaskDetail with a router and initial route
 export function mountTaskDetail(initialPath = "/task/1") {
   return mount(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route path="/task/:id" element={<TaskDetail />} />
-      </Routes>
-    </MemoryRouter>
+    <UsersProvider>
+      <MemoryRouter initialEntries={[initialPath]}>
+        <Routes>
+          <Route path="/task/:id" element={<TaskDetail />} />
+        </Routes>
+      </MemoryRouter>
+    </UsersProvider>
   );
 }
 
@@ -31,14 +34,14 @@ export function mountTaskForm(props = {}) {
   const onCancel = cy.stub().as("onCancel");
 
   cy.mount(
-    <TaskForm
-      projectId={1}
-      createdBy="alice"
-      modifiedBy="alice"
-      {...props}
-      onSuccess={onSuccess}
-      onCancel={onCancel}
-    />,
+    <UsersProvider>
+      <TaskForm
+        projectId={1}
+        {...props}
+        onSuccess={onSuccess}
+        onCancel={onCancel}
+      />
+    </UsersProvider>,
   );
 
   return { onSuccess, onCancel };
