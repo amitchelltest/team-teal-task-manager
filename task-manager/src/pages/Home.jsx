@@ -75,9 +75,9 @@ export default function Home({ projectId }) {
   }
 
   useEffect(() => {
-    loadColumns(projectId);
+    loadColumns(currentProjectId);
     loadProjects();
-  }, [projectId]);
+  }, [currentProjectId]);
 
   function openModal() {
     setShowCreateModal(true);
@@ -100,7 +100,7 @@ export default function Home({ projectId }) {
 
   return (
     <div>
-      <ProjectSelector projects={projects} selectedProjectId={currentProjectId} onSelectProject={selectProject}/>
+      <ProjectSelector projects={projects} selectedProjectId={currentProjectId} onSelectProject={setCurrentProjectId}/>
       <header>
         <Link to="/profile" style={{float: "right"}}>
           My Profile
