@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import TaskForm from "../components/TaskForm.jsx";
 import Kanban from "../components/Kanban.jsx";
 import { Link } from "react-router-dom";
+import ProjectSelector from "../components/ProjectSelector.jsx";
 
 export default function Home({ projectId }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [columns, setColumns] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [currentProjectId, setCurrentProjectId] = useState(projectId);
 
   // Load the columns and tasks for the provided project ID
   async function loadColumns(projectId) {
@@ -49,8 +52,31 @@ export default function Home({ projectId }) {
     }
   }
 
+  async function loadProjects(){
+    try {
+      // Fetch projects from API
+      const res = await fetch(`/api/projects`);
+
+      // Ensure projectsArr is an array and there was no error
+      const projectsArr = await res.json().catch(() => null);
+      if (!Array.isArray(projectsArr) || projectsArr.error) {
+        console.error("API error loading projects", projectsArr);
+        setProjects([]);
+        return;
+      }
+
+      // Update projects useState
+      setProjects(projectsArr);
+    } 
+    catch (err) {
+      console.error("Fetch error", err);
+      setProjects([]);
+    }
+  }
+
   useEffect(() => {
     loadColumns(projectId);
+    loadProjects();
   }, [projectId]);
 
   function openModal() {
@@ -74,6 +100,7 @@ export default function Home({ projectId }) {
 
   return (
     <div>
+      <ProjectSelector projects={projects} selectedProjectId={currentProjectId} onSelectProject={selectProject}/>
       <header>
         <Link to="/profile" style={{float: "right"}}>
           My Profile
