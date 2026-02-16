@@ -75,8 +75,8 @@ export default function Home({ projectId }) {
   }
 
   useEffect(() => {
-    loadColumns(currentProjectId);
     loadProjects();
+    loadColumns(currentProjectId);
   }, [currentProjectId]);
 
   function openModal() {
