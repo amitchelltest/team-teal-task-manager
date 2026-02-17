@@ -16,7 +16,6 @@ export default function Home({ projectId: initialProjectId }) {
   const [selectedReporter, setSelectedReporter] = useState("all");
   const [selectedProject, setSelectedProject] = useState("all");
   const [users, setUsers] = useState([]);
-  const [projects, setProjects] = useState([]);
 
   // Load the columns and tasks for the provided project ID
   async function loadColumns(projectId) {
@@ -157,7 +156,7 @@ export default function Home({ projectId: initialProjectId }) {
 
         {/* Task Filtering UI Section */}
 
-        <div style={{ display: "flex", gap: "10px", margin: "20px 0", padding: "10px", background: "#0f172a", borderRadius: "5px" }}>
+        <div style={{ display: "flex", gap: "10px", margin: "20px 0", padding: "10px", background: "#0f172a", borderRadius: "5px", alignContent: "left" }}>
           <span style={{ fontWeight: "bold", color: "#ffffff", fontSize: "14px" }}>
             Filter Board:
           </span>
