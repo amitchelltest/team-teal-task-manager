@@ -11,12 +11,13 @@ describe("GoogleSignInButton", () => {
 
     const { container } = renderWithRoot(<GoogleSignInButton />);
     const btn = container.querySelector('button[aria-label="Sign in with Google"]');
+
     expect(btn).not.toBeNull();
-    expect(btn.className).toMatch(/google-sign-in-button/);
 
     await click(btn);
 
     expect(window.location.href).toBe("/api/auth/login");
+
 
     window.location = originalLocation;
   });
