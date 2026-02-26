@@ -1,4 +1,4 @@
-// Cypress component testing support file
+g// Cypress component testing support file
 // - Re-exports the Cypress React mount function
 // - Sets up a helper to mount components with React Router
 /* eslint-disable react-refresh/only-export-components */
