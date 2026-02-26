@@ -365,6 +365,31 @@ export function makeCrudHandlers(options = {}) {
 
       if (request.method === "POST") {
         const body = await parseJson(request);
+        
+        if (table === "projects") {
+          const validStatuses = ["not_started", "in_progress", "complete"];
+
+          // If status is provided but invalid, reject it
+          if (
+            body.status !== undefined &&
+            !validStatuses.includes(body.status)
+          ) {
+            return new Response(
+              JSON.stringify({
+                error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+              }),
+              {
+                status: 400,
+                headers: CORS,
+              },
+            );
+          }
+
+          // If status is missing, set default
+          if (!body.status) {
+            body.status = "not_started";
+          }
+        }
         // Choose columns from allowedColumns if provided (but only those present in body), otherwise from body keys
         const payloadCols =
           allowedColumns && allowedColumns.length
