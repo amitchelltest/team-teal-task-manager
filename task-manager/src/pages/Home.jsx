@@ -101,14 +101,21 @@ export default function Home({ projectId: initialProjectId }) {
 
   useEffect(() => {
     if (!projectId) return;
+    setColumns([]);
     loadColumns(projectId);
     // Added to trigger task filtering metadata load
     loadFilterMetadata();
   }, [projectId]);
 
+  const activeProjectColumns = useMemo(() => {
+    return columns.filter(
+      (col) => Number(col.project_id) === Number(projectId),
+    );
+  }, [columns, projectId]);
+
   /* Task filtering engine - Calculates a 'view' without changing columns state */
   const filteredColumns = useMemo(() => {
-    return columns.map((col) => ({
+    return activeProjectColumns.map((col) => ({
       ...col,
       tasks: col.tasks.filter((t) => {
         const mAssignee =
@@ -120,7 +127,7 @@ export default function Home({ projectId: initialProjectId }) {
         return mAssignee && mReporter;
       }),
     }));
-  }, [columns, selectedAssignee, selectedReporter]);
+  }, [activeProjectColumns, selectedAssignee, selectedReporter]);
  
   /* Gets the correct board type based on the current project. Defaults to Kanban */
   const selectedProjectType = useMemo(() => {
@@ -254,7 +261,11 @@ export default function Home({ projectId: initialProjectId }) {
       </div>
 
       <div>
-        <BoardComponent columns={filteredColumns} setColumns={setColumns} />
+        <BoardComponent
+          key={projectId}
+          columns={filteredColumns}
+          setColumns={setColumns}
+        />
       </div>
     </div>
   );

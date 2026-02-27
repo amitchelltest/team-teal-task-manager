@@ -3,11 +3,10 @@ import { useMemo } from "react";
 
 function Scrum({ columns = [], setColumns = () => {} }) {
     const scrumColumns = useMemo(() => {
-        // todo: should probably check for capital B Backlog, but worried that
-        // might break things if we send columns with backlogs but assume they
-        // don't exist
+        if (columns.length === 0) return columns;
+
         const hasBacklog = columns.some(
-            (column) => (column.title || "").trim().toLowerCase() === "backlog",
+            (column) => (column.title || column.name || "").trim().toLowerCase() === "backlog",
         );
 
         if (!hasBacklog) {
