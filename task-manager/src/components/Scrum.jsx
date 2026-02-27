@@ -1,6 +1,5 @@
 import Board from "./Board";
-
-const { useMemo } = require("react");
+import { useMemo } from "react";
 
 function Scrum({ columns = [], setColumns = () => {} }) {
     const scrumColumns = useMemo(() => {

@@ -1,3 +1,6 @@
+import KanbanColumn from "./KanbanColumn";
+import { DragDropContext } from "@hello-pangea/dnd";
+
 function Board({
     columns = [],
     setColumns = () => {},

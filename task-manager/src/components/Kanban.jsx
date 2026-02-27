@@ -1,6 +1,4 @@
 import Board from "./Board";
-import KanbanColumn from "./KanbanColumn";
-import { DragDropContext } from "@hello-pangea/dnd";
 /**
  * Kanban
  *
