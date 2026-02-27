@@ -3,6 +3,7 @@ import TaskForm from "../components/TaskForm.jsx";
 import Kanban from "../components/Kanban.jsx";
 import { Link } from "react-router-dom";
 import ProjectSelector from "../components/ProjectSelector.jsx";
+import Scrum from "../components/Scrum.jsx";
 
 export default function Home({ projectId: initialProjectId }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -117,7 +118,20 @@ export default function Home({ projectId: initialProjectId }) {
     }));
   }, [columns, selectedStatus, selectedAssignee, selectedReporter, selectedProject]);
  
+  /* Gets the correct board type based on the current project. Defaults to Kanban */
+  const selectedProjectType = useMemo(() => {
+    const currentProject = projects.find((p) => Number(p.id) === Number(projectId));
+    const type = (currentProject?.type || "kanban").toLowerCase();
+    return type;
+  }, [projects, projectId])
 
+  const BoardComponent = useMemo(() => {
+    const boardByType = {
+      kanban: Kanban,
+      scrum: Scrum,
+    };
+    return boardByType[selectedProjectType] || Kanban;
+  }, [selectedProjectType]);
 
   function openModal() {
     setShowCreateModal(true);
