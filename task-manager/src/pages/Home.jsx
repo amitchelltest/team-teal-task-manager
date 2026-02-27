@@ -120,7 +120,7 @@ export default function Home({ projectId: initialProjectId }) {
         return mAssignee && mReporter;
       }),
     }));
-  }, [columns, selectedStatus, selectedAssignee, selectedReporter, selectedProject]);
+  }, [columns, selectedAssignee, selectedReporter]);
  
   /* Gets the correct board type based on the current project. Defaults to Kanban */
   const selectedProjectType = useMemo(() => {
