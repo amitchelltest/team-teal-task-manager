@@ -21,7 +21,7 @@ const config = {
     "title",
     "description",
     "start_date",
-    "end_date",
+    "due_date",
     "updated_at",
     "position",
   ],
