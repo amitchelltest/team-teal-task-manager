@@ -1,16 +1,7 @@
 import { jwtVerify } from "jose";
+import { parseCookies } from "./helpers.js";
 
 const PUBLIC_PREFIX = "/api/auth/";
-
-function parseCookies(cookieHeader) {
-  const cookies = {};
-  if (!cookieHeader) return cookies;
-  for (const pair of cookieHeader.split(";")) {
-    const [name, ...rest] = pair.trim().split("=");
-    if (name) cookies[name.trim()] = rest.join("=").trim();
-  }
-  return cookies;
-}
 
 export async function onRequest(context) {
   const { request, env, next } = context;

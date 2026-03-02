@@ -1,15 +1,5 @@
 import { jwtVerify } from "jose";
-import { queryOne } from "../helpers.js";
-
-function parseCookies(cookieHeader) {
-  const cookies = {};
-  if (!cookieHeader) return cookies;
-  for (const pair of cookieHeader.split(";")) {
-    const [name, ...rest] = pair.trim().split("=");
-    if (name) cookies[name.trim()] = rest.join("=").trim();
-  }
-  return cookies;
-}
+import { parseCookies, queryOne } from "../helpers.js";
 
 export async function onRequestGet({ request, env }) {
   const cookies = parseCookies(request.headers.get("Cookie"));

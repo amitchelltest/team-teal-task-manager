@@ -47,6 +47,21 @@ export function buildCorsHeaders(env, req, methods = "GET,POST,OPTIONS") {
 }
 
 /**
+ * Parse cookies from a Cookie header string.
+ * @param {string|null} cookieHeader - The Cookie header value
+ * @returns {Record<string,string>} - Object mapping cookie names to values
+ */
+export function parseCookies(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+  for (const pair of cookieHeader.split(";")) {
+    const [name, ...rest] = pair.trim().split("=");
+    if (name) cookies[name.trim()] = rest.join("=").trim();
+  }
+  return cookies;
+}
+
+/**
  * Execute a query and return an array of rows.
  * Normalizes driver responses (some return { results: [...] }).
  * @param {object} db - D1/database binding
@@ -365,7 +380,7 @@ export function makeCrudHandlers(options = {}) {
 
       if (request.method === "POST") {
         const body = await parseJson(request);
-        
+
         if (table === "projects") {
           const validStatuses = ["not_started", "in_progress", "complete"];
 
