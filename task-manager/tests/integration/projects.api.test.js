@@ -106,7 +106,7 @@ describe("Projects API with D1 (integration)", () => {
             const cols = await colsRes.json();
             expect(Array.isArray(cols)).toBe(true);
 
-            const keys = cols.map(c => (c.key || '').trim().toLowerCase().replace(/\s/g, ""));
+            const keys = cols.map(c => (c.name || '').trim().toLowerCase().replace(/\s/g, ""));
 
             // scrum must include backlog
             expect(keys).toContain('todo');
