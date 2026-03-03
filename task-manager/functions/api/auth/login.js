@@ -1,5 +1,5 @@
 export async function onRequestGet({ request, env }) {
-  const currentOrigin = `https://${request.headers.get("host")}`;
+  const currentOrigin = new URL(request.url).origin;
   const redirectUri =
     env.GOOGLE_REDIRECT_URI || `${currentOrigin}/api/auth/callback`;
 

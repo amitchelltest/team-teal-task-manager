@@ -29,9 +29,9 @@ function ProtectedRoute({ children }) {
 export default function App() {
   return (
     <div className="w-full min-h-screen flex flex-col items-center p-8 text-center bg-slate-900 scrollbar-none">
+      <LoginButton />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-
         <Route path="/" element={<ProtectedRoute><Home projectId={1} /></ProtectedRoute>} />
         <Route path="/task/:id" element={<ProtectedRoute><TaskDetail /></ProtectedRoute>} />
         <Route path="/project-sidebar" element={<ProtectedRoute><ProjectSidebar /></ProtectedRoute>} />
@@ -39,7 +39,6 @@ export default function App() {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/user-management" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
       </Routes>
-      {/* <LoginButton /> */}
     </div>
   );
 }

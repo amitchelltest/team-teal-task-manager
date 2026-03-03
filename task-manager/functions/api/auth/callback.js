@@ -18,8 +18,14 @@ function isAllowedOrigin(origin) {
   }
 }
 
+function isLocalhost(hostname) {
+  const h = hostname.split(":")[0];
+  return h === "localhost" || h === "127.0.0.1";
+}
+
 function buildSessionCookie(token, hostname) {
-  let cookie = `session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`;
+  const secure = isLocalhost(hostname) ? "" : " Secure;";
+  let cookie = `session=${token}; HttpOnly;${secure} SameSite=Lax; Path=/; Max-Age=604800`;
   if (hostname === COOKIE_DOMAIN || hostname.endsWith(PAGES_DEV_SUFFIX)) {
     cookie += `; Domain=${COOKIE_DOMAIN}`;
   }
@@ -51,9 +57,13 @@ export async function onRequest({ request, env }) {
   const debug = url.searchParams.get("debug") === "1";
 
   const stateOrigin = url.searchParams.get("state");
-  const fallbackOrigin = `https://${request.headers.get("host")}`;
-  const origin =
+  const fallbackOrigin = new URL(request.url).origin;
+  let origin =
     stateOrigin && isAllowedOrigin(stateOrigin) ? stateOrigin : fallbackOrigin;
+
+  if (isLocalhost(url.hostname)) {
+    origin = fallbackOrigin;
+  }
 
   if (error) {
     console.error("oauth error:", error);
