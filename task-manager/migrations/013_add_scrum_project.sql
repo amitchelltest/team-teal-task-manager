@@ -5,6 +5,10 @@ ALTER TABLE Projects
 ADD COLUMN type TEXT NOT NULL DEFAULT 'kanban'
 CHECK (type IN ('kanban', 'scrum'));
 
+-- remove existing scrum projects so seed starts clean
+DELETE FROM Projects
+WHERE type = 'scrum';
+
 -- ensure at least one user exists for required FK fields
 INSERT INTO Users (display_name, email, timezone)
 SELECT 'Seed User', 'seed.user@example.com', 'UTC'
