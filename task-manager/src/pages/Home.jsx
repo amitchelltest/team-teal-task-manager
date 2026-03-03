@@ -1,15 +1,19 @@
 import { useState, useEffect, useMemo } from "react";
 import TaskForm from "../components/TaskForm.jsx";
 import Kanban from "../components/Kanban.jsx";
+import NewTaskButton from "../components/NewTaskButton.jsx";
 import { Link } from "react-router-dom";
 import ProjectSelector from "../components/ProjectSelector.jsx";
 import Scrum from "../components/Scrum.jsx";
+import Backlog from "../components/Backlog.jsx";
 
 export default function Home({ projectId: initialProjectId }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [columns, setColumns] = useState([]);
+  const [backlogColumns, setBacklogColumns] = useState([]);
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState(initialProjectId);
+  const [projectTab, setProjectTab] = useState("Board");
 
   /* Adding states for task filtering */
   const [selectedAssignee, setSelectedAssignee] = useState("all");
@@ -37,7 +41,7 @@ export default function Home({ projectId: initialProjectId }) {
         setColumns([]);
         return;
       }
-      console.log(taskList);
+
       const columnsWithTasks = cols.map((col) => {
         const colTasks = taskList
           .filter((t) => Number(t.column_id) === Number(col.id))
@@ -50,11 +54,20 @@ export default function Home({ projectId: initialProjectId }) {
           tasks: colTasks,
         };
       });
-
       setColumns(columnsWithTasks);
+      
+      const backlogTasks = taskList.filter((t) => t.column_id == null);
+      const backlogTaskCollection = [{
+        id: null,
+        title: "Backlog",
+        tasks: backlogTasks,
+      }];
+      setBacklogColumns(backlogTaskCollection);
+      console.log(backlogTaskCollection);
     } catch (err) {
       console.error("Fetch error", err);
       setColumns([]);
+      setBacklogColumns([]);
     }
   }
 
@@ -144,6 +157,24 @@ export default function Home({ projectId: initialProjectId }) {
     return boardByType[selectedProjectType] || Kanban;
   }, [selectedProjectType]);
 
+  function handleProjectTabSwitch(e) {
+    setProjectTab(e.target.value)
+  }
+
+  const projectTabs = {
+    Board: 
+      <BoardComponent
+        key={projectId}
+        columns={filteredColumns}
+        setColumns={setColumns}
+      />,
+    Backlog:
+      <Backlog
+        key={projectId}
+        backlog={backlogColumns}
+      />,
+  }
+
   function openModal() {
     setShowCreateModal(true);
   }
@@ -176,9 +207,26 @@ export default function Home({ projectId: initialProjectId }) {
 
       <div className="bg-gradient-to-r from-slate-700 to-slate-600 rounded-lg px-6 py-4 shadow-lg mb-6">
         <h1 className="text-3xl font-bold text-white m-0">
-          Project {projectId} Board
+          Project {projectId} {projectTab}
         </h1>
+        <button
+          type="button"
+          value="Board"
+          onClick={handleProjectTabSwitch}
+        >
+          Board
+        </button>
+        {selectedProjectType === "scrum" ? (
+          <button
+            type="button"
+            value="Backlog"
+            onClick={handleProjectTabSwitch}
+          >
+            Backlog
+          </button>
+        ) : (null)}
       </div>
+
       <div className="flex items-center gap-4 mb-6">
         <ProjectSelector
           projects={projects}
@@ -186,13 +234,11 @@ export default function Home({ projectId: initialProjectId }) {
           onSelectProject={setProjectId}
         />
 
-        <button
-          type="button"
-          onClick={openModal}
-          className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white font-medium px-6 py-3 rounded-lg shadow-md transition-all duration-200 whitespace-nowrap"
-        >
-          + New Task
-        </button>
+        {selectedProjectType === "scrum" && projectTab === "Board" ? (null) : (
+          <NewTaskButton 
+            openModal={openModal}
+          />
+        )}
 
         <div className="flex items-center gap-3 flex-1">
           <span className="font-semibold text-white text-sm whitespace-nowrap">
@@ -261,11 +307,7 @@ export default function Home({ projectId: initialProjectId }) {
       </div>
 
       <div>
-        <BoardComponent
-          key={projectId}
-          columns={filteredColumns}
-          setColumns={setColumns}
-        />
+        {projectTabs[projectTab] ?? <div>unknown tab</div>}
       </div>
     </div>
   );
