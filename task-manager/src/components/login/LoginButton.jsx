@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useUsers } from '../../contexts/UsersContext.jsx';
-//import './LoginButton.css';
 
 export default function LoginButton() {
     const { isAuthenticated, currentUser, logout, authLoading } = useUsers();
@@ -10,23 +9,14 @@ export default function LoginButton() {
 
     if (isAuthenticated && currentUser) {
         return (
-            <div className="login-button" style={{ gap: '8px', cursor: 'default' }}>
-                <span>{currentUser.display_name}</span>
+            <div className="flex items-center gap-2">
                 <button
                     type="button"
                     onClick={async () => {
                         await logout();
                         navigate('/login');
                     }}
-                    style={{
-                        background: 'transparent',
-                        border: '1px solid rgba(255,255,255,0.4)',
-                        color: '#fff',
-                        borderRadius: '4px',
-                        padding: '2px 8px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                    }}
+                    className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg transition-all duration-200"
                 >
                     Sign out
                 </button>
@@ -35,8 +25,9 @@ export default function LoginButton() {
     }
 
     return (
-        <Link to='/login'
-            className='login-button'
+        <Link
+            to='/login'
+            className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg transition-all duration-200"
             aria-label='Login'
         >
             Login

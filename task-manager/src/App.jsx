@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Link } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import TaskDetail from "./pages/TaskDetail.jsx";
 import ProjectSidebar from "./pages/ProjectSidebar.jsx";
@@ -27,9 +27,21 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
+  const { isAuthenticated, authLoading } = useUsers();
+
   return (
     <div className="w-full min-h-screen flex flex-col items-center p-8 text-center bg-slate-900 scrollbar-none">
-      <LoginButton />
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-3">
+        {!authLoading && isAuthenticated && (
+          <Link
+            to="/profile"
+            className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg transition-all duration-200"
+          >
+            My Profile
+          </Link>
+        )}
+        <LoginButton />
+      </div>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<ProtectedRoute><Home projectId={1} /></ProtectedRoute>} />
