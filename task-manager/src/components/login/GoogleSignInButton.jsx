@@ -1,9 +1,7 @@
-//import './GoogleSignInButton.css';
-
 export function GoogleSignInButton() {
-    const handleClick = () => {
-        window.location.href = "/api/auth/login";
-    }
+  const handleClick = () => {
+    window.location.href = "/api/auth/login";
+  };
 
 
   return (
