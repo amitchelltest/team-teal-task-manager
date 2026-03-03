@@ -25,9 +25,18 @@ export async function onRequest(context) {
     });
   }
 
+  if (!env.JWT_SECRET) {
+    return new Response(JSON.stringify({ error: "Server misconfiguration" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const secret = new TextEncoder().encode(env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret, {
+      algorithms: ["HS256"],
+    });
 
     const userId = Number(payload.sub);
     if (Number.isNaN(userId)) {

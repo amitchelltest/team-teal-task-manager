@@ -12,9 +12,18 @@ export async function onRequestGet({ request, env }) {
     });
   }
 
+  if (!env.JWT_SECRET) {
+    return new Response(JSON.stringify({ error: "Server misconfiguration" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const secret = new TextEncoder().encode(env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret, {
+      algorithms: ["HS256"],
+    });
 
     const db = env.cf_db;
     const user = await queryOne(db, "SELECT * FROM Users WHERE id = ?", [
