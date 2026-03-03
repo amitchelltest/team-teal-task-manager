@@ -32,7 +32,33 @@ function buildSessionCookie(token, hostname) {
   return cookie;
 }
 
-async function redirectWithSession(url, userId, email, jwtSecret) {
+function clearOAuthStateCookie(hostname) {
+  const secure = isLocalhost(hostname) ? "" : " Secure;";
+  return `oauth_state=; HttpOnly;${secure} SameSite=Lax; Path=/; Max-Age=0`;
+}
+
+function getOAuthState(request) {
+  const header = request.headers.get("Cookie") || "";
+  for (const pair of header.split(";")) {
+    const [name, ...rest] = pair.trim().split("=");
+    if (name === "oauth_state") {
+      try {
+        return JSON.parse(atob(rest.join("=")));
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+function redirectWithClear(url, hostname) {
+  const headers = new Headers({ Location: url });
+  headers.append("Set-Cookie", clearOAuthStateCookie(hostname));
+  return new Response(null, { status: 302, headers });
+}
+
+async function redirectWithSession(url, userId, email, jwtSecret, hostname) {
   const secret = new TextEncoder().encode(jwtSecret);
   const token = await new SignJWT({ sub: String(userId), email })
     .setProtectedHeader({ alg: "HS256" })
@@ -40,14 +66,10 @@ async function redirectWithSession(url, userId, email, jwtSecret) {
     .setExpirationTime("7d")
     .sign(secret);
 
-  const { hostname } = new URL(url);
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: url,
-      "Set-Cookie": buildSessionCookie(token, hostname),
-    },
-  });
+  const headers = new Headers({ Location: url });
+  headers.append("Set-Cookie", buildSessionCookie(token, hostname));
+  headers.append("Set-Cookie", clearOAuthStateCookie(hostname));
+  return new Response(null, { status: 302, headers });
 }
 
 export async function onRequest({ request, env }) {
@@ -55,24 +77,41 @@ export async function onRequest({ request, env }) {
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
   const debug = url.searchParams.get("debug") === "1";
+  const fallbackOrigin = url.origin;
 
-  const stateOrigin = url.searchParams.get("state");
-  const fallbackOrigin = new URL(request.url).origin;
+  const oauthState = getOAuthState(request);
+  const returnedState = url.searchParams.get("state");
+
+  if (!oauthState || returnedState !== oauthState.s) {
+    return new Response("state mismatch – possible CSRF", { status: 403 });
+  }
+
   let origin =
-    stateOrigin && isAllowedOrigin(stateOrigin) ? stateOrigin : fallbackOrigin;
+    oauthState.o && isAllowedOrigin(oauthState.o)
+      ? oauthState.o
+      : fallbackOrigin;
 
   if (isLocalhost(url.hostname)) {
     origin = fallbackOrigin;
   }
 
+  const codeVerifier = oauthState.v;
+
   if (error) {
     console.error("oauth error:", error);
     if (debug) return new Response(JSON.stringify({ error }), { status: 400, headers: { "Content-Type": "application/json" } });
-    return Response.redirect(origin, 302);
+    return redirectWithClear(origin, url.hostname);
   }
 
   if (!code) {
     return new Response("missing code", { status: 400 });
+  }
+
+  if (!env.JWT_SECRET) {
+    return new Response(JSON.stringify({ error: "Server misconfiguration" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const redirectUri = env.GOOGLE_REDIRECT_URI || `${origin}/api/auth/callback`;
@@ -88,6 +127,7 @@ export async function onRequest({ request, env }) {
         client_secret: env.GOOGLE_CLIENT_SECRET,
         redirect_uri: redirectUri,
         grant_type: "authorization_code",
+        code_verifier: codeVerifier,
       }),
     });
 
@@ -95,7 +135,7 @@ export async function onRequest({ request, env }) {
     if (!tokenResponse.ok) {
       console.error("token exchange failed", tokenData);
       if (debug) return new Response(JSON.stringify({ tokenError: tokenData }), { status: 502, headers: { "Content-Type": "application/json" } });
-      return Response.redirect(origin, 302);
+      return redirectWithClear(origin, url.hostname);
     }
 
     const userInfoRes = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
@@ -105,10 +145,9 @@ export async function onRequest({ request, env }) {
     if (!userInfoRes.ok) {
       console.error("could not fetch user info", userInfoData);
       if (debug) return new Response(JSON.stringify({ userInfoError: userInfoData }), { status: 502, headers: { "Content-Type": "application/json" } });
-      return Response.redirect(origin, 302);
+      return redirectWithClear(origin, url.hostname);
     }
 
-    // Resolve or create the user directly via DB
     let userId = null;
 
     const existingUser = await queryOne(
@@ -132,12 +171,11 @@ export async function onRequest({ request, env }) {
       if (!newUser) {
         console.error("failed to create user");
         if (debug) return new Response(JSON.stringify({ error: "failed to create user" }), { status: 500, headers: { "Content-Type": "application/json" } });
-        return Response.redirect(`${origin}/auth/error?reason=create_user_failed`, 302);
+        return redirectWithClear(`${origin}/auth/error?reason=create_user_failed`, url.hostname);
       }
       userId = newUser.id;
     }
 
-    // Ensure a provider mapping exists
     const existingProvider = await queryOne(
       db,
       "SELECT id, user_id FROM User_Providers WHERE provider = ? AND provider_user_id = ?",
@@ -152,7 +190,7 @@ export async function onRequest({ request, env }) {
           email: userInfoData.email,
         });
         if (debug) return new Response(JSON.stringify({ error: "provider-linked-to-different-account" }), { status: 409, headers: { "Content-Type": "application/json" } });
-        return Response.redirect(`${origin}/auth/error?reason=provider_conflict`, 302);
+        return redirectWithClear(`${origin}/auth/error?reason=provider_conflict`, url.hostname);
       }
     } else {
       const expiresAt = tokenData.expires_in
@@ -160,15 +198,15 @@ export async function onRequest({ request, env }) {
         : null;
       await execute(
         db,
-        "INSERT INTO User_Providers (user_id, provider, provider_user_id, refresh_token, token_expires_at) VALUES (?, ?, ?, ?, ?)",
-        [userId, "google", userInfoData.sub ?? null, tokenData.refresh_token ?? null, expiresAt]
+        "INSERT INTO User_Providers (user_id, provider, provider_user_id, token_expires_at) VALUES (?, ?, ?, ?)",
+        [userId, "google", userInfoData.sub ?? null, expiresAt]
       );
     }
 
-    return await redirectWithSession(origin, userId, userInfoData.email, env.JWT_SECRET);
+    return await redirectWithSession(origin, userId, userInfoData.email, env.JWT_SECRET, url.hostname);
   } catch (err) {
     console.error("callback onRequest error", err);
     if (debug) return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: { "Content-Type": "application/json" } });
-    return Response.redirect(origin, 302);
+    return redirectWithClear(origin, url.hostname);
   }
 }
