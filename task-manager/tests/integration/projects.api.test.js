@@ -89,27 +89,31 @@ describe("Projects API with D1 (integration)", () => {
             const body = await res.json(); expect(body).toBeTruthy(); 
         });
 
-    it("Seeded scrum projects contain todo column", async () => {
-        const res = await fetch(`${BASE_URL}/api/projects`);
-        expect(res.ok).toBe(true);
+    it("Ensures no project has duplicate column names", async () => {
+        const projectRes = await fetch(`${BASE_URL}/api/projects`);
+        expect(projectRes.ok).toBe(true);
 
-        const data = await res.json();
-        expect(Array.isArray(data)).toBe(true);
+        const projectData = await projectRes.json();
+        expect(Array.isArray(projectData)).toBe(true);
 
-        // get all scrum projects
-        const scrumProject = data.find((p) => p && p.type === 'scrum');
-        expect(scrumProject).toBeTruthy();
+        const normalizeName = (name) => String(name ?? "").trim().toLowerCase();
 
-        if (scrumProject) {
-            const colsRes = await fetch(`${BASE_URL}/api/columns?project_id=${scrumProject.id}`);
-            expect(colsRes.ok).toBe(true);
-            const cols = await colsRes.json();
-            expect(Array.isArray(cols)).toBe(true);
+        for (const project of projectData) {
+            const columnsRes = await fetch(`${BASE_URL}/api/columns?project_id=${project.id}`);
+            expect(columnsRes.ok).toBe(true);
 
-            const keys = cols.map(c => (c.name || '').trim().toLowerCase().replace(/\s/g, ""));
+            const columnsData = await columnsRes.json();
+            expect(Array.isArray(columnsData)).toBe(true);
 
-            // scrum must include backlog
-            expect(keys).toContain('todo');
+            const seenNames = new Set();
+
+            for (const column of columnsData) {
+                const normalizedName = normalizeName(column.name);
+                expect(seenNames.has(normalizedName)).toBe(false);
+                seenNames.add(normalizedName);
+            }
         }
     });
+
+
 });
