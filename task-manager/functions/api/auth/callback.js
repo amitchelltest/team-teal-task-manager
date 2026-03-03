@@ -1,8 +1,29 @@
 import { SignJWT } from "jose";
 import { queryOne, execute } from "../helpers.js";
 
-function buildSessionCookie(token) {
-  return `session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`;
+const PAGES_DEV_SUFFIX = ".team-teal-task-manager.pages.dev";
+const COOKIE_DOMAIN = "team-teal-task-manager.pages.dev";
+
+function isAllowedOrigin(origin) {
+  try {
+    const { hostname } = new URL(origin);
+    return (
+      hostname === COOKIE_DOMAIN ||
+      hostname.endsWith(PAGES_DEV_SUFFIX) ||
+      hostname === "localhost" ||
+      hostname === "127.0.0.1"
+    );
+  } catch {
+    return false;
+  }
+}
+
+function buildSessionCookie(token, hostname) {
+  let cookie = `session=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`;
+  if (hostname === COOKIE_DOMAIN || hostname.endsWith(PAGES_DEV_SUFFIX)) {
+    cookie += `; Domain=${COOKIE_DOMAIN}`;
+  }
+  return cookie;
 }
 
 async function redirectWithSession(url, userId, email, jwtSecret) {
@@ -13,11 +34,12 @@ async function redirectWithSession(url, userId, email, jwtSecret) {
     .setExpirationTime("7d")
     .sign(secret);
 
+  const { hostname } = new URL(url);
   return new Response(null, {
     status: 302,
     headers: {
       Location: url,
-      "Set-Cookie": buildSessionCookie(token),
+      "Set-Cookie": buildSessionCookie(token, hostname),
     },
   });
 }
@@ -28,7 +50,10 @@ export async function onRequest({ request, env }) {
   const error = url.searchParams.get("error");
   const debug = url.searchParams.get("debug") === "1";
 
-  const origin = env.FRONTEND_ORIGIN || `https://${request.headers.get("host")}`;
+  const stateOrigin = url.searchParams.get("state");
+  const fallbackOrigin = `https://${request.headers.get("host")}`;
+  const origin =
+    stateOrigin && isAllowedOrigin(stateOrigin) ? stateOrigin : fallbackOrigin;
 
   if (error) {
     console.error("oauth error:", error);
