@@ -88,7 +88,7 @@ describe("Projects API with D1 (integration)", () => {
         });
 
     it("Ensures no project has duplicate column names", async () => {
-        const projectRes = await fetch(`${BASE_URL}/api/projects`);
+        const projectRes = await authFetch(`${BASE_URL}/api/projects`);
         expect(projectRes.ok).toBe(true);
 
         const projectData = await projectRes.json();
@@ -97,7 +97,7 @@ describe("Projects API with D1 (integration)", () => {
         const normalizeName = (name) => String(name ?? "").trim().toLowerCase();
 
         for (const project of projectData) {
-            const columnsRes = await fetch(`${BASE_URL}/api/columns?project_id=${project.id}`);
+            const columnsRes = await authFetch(`${BASE_URL}/api/columns?project_id=${project.id}`);
             expect(columnsRes.ok).toBe(true);
 
             const columnsData = await columnsRes.json();
