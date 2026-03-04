@@ -60,7 +60,7 @@ export default function App() {
         <LoginButton />
       </div>
       <Routes>
-        <Route path="/clinician" element={<Clinician />} />
+        <Route path="/clinician" element={<ProtectedRoute><Clinician /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<ProtectedRoute><Home projectId={1} /></ProtectedRoute>} />
         <Route path="/task/:id" element={<ProtectedRoute><TaskDetail /></ProtectedRoute>} />
