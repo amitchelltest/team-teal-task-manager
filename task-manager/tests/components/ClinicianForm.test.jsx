@@ -10,10 +10,7 @@ function renderClinicianForm(props = {}) {
 
   const { container, root } = renderWithRoot(
     <UsersProvider>
-      <ClinicianForm
-        onSuccess={onSuccess}
-        onCancel={onCancel}
-      />
+      <ClinicianForm onSuccess={onSuccess} onCancel={onCancel} />
     </UsersProvider>,
   );
 
@@ -84,7 +81,10 @@ describe("ClinicianForm (Vitest)", () => {
     await click(submitButton);
 
     expect(container.textContent).toContain("This field is required");
-    expect(fetchMock).not.toHaveBeenCalledWith("/api/tasks", expect.any(Object));
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      "/api/tasks",
+      expect.any(Object),
+    );
   });
 
   it("validates required project_id before submit", async () => {
@@ -107,9 +107,9 @@ describe("ClinicianForm (Vitest)", () => {
 
     await flushAsync();
 
-    const cancelButton = Array.from(
-      container.querySelectorAll("button"),
-    ).find((btn) => btn.textContent.includes("Cancel"));
+    const cancelButton = Array.from(container.querySelectorAll("button")).find(
+      (btn) => btn.textContent.includes("Cancel"),
+    );
 
     expect(cancelButton).not.toBeNull();
 
@@ -138,7 +138,9 @@ describe("ClinicianForm (Vitest)", () => {
     await flushAsync();
 
     const titleInput = container.querySelector("input[name='title']");
-    const descriptionInput = container.querySelector("textarea[name='description']");
+    const descriptionInput = container.querySelector(
+      "textarea[name='description']",
+    );
     const dueDateInput = container.querySelector("input[name='due_date']");
 
     expect(titleInput).not.toBeNull();

@@ -13,7 +13,7 @@ export default function ClinicianPage() {
     setShowCreateModal(false);
   }
 
-  async function handleCreated() {
+  function handleCreated() {
     closeModal();
   }
 

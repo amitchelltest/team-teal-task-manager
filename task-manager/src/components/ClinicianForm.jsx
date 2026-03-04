@@ -8,19 +8,15 @@ const EMPTY_FORM = {
   project_id: "",
 };
 
-export default function ClinicianForm({
-  onSuccess,
-  onCancel,
-}) {
-  const {
-    currentUser,
-  } = useUsers();
+export default function ClinicianForm({ onSuccess, onCancel }) {
+  const { currentUser } = useUsers();
   const [form, setForm] = useState(() => ({
     ...EMPTY_FORM,
   }));
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success' | 'error' | null
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [projectsError, setProjectsError] = useState(null);
@@ -85,32 +81,40 @@ export default function ClinicianForm({
   async function handleSubmit(e) {
     e.preventDefault();
     setSubmitMessage("");
+    setSubmitStatus(null);
 
     if (!validate()) return;
 
     setSubmitting(true);
 
+    const projectIdNum = Number(form.project_id);
+    if (isNaN(projectIdNum)) {
+      setSubmitMessage("Current project is invalid");
+      setSubmitStatus("error");
+      setSubmitting(false);
+      return;
+    }
+
     const payload = {
       title: form.title,
       description: form.description,
-      sprint_id: 1,
+      sprint_id: null,
       reporter_id: currentUser?.id ?? null,
       assignee_id: null,
       start_date: null,
       due_date: form.due_date || null,
-      project_id: Number(form.project_id),
+      project_id: projectIdNum,
       column_id: null,
       created_by: currentUser?.id ?? null,
       modified_by: currentUser?.id ?? null,
     };
 
     try {
-      const { resp, data } = await createTaskApi(payload);      
+      const { resp, data } = await createTaskApi(payload);
       if (!resp.ok) {
         console.error("Clinician request creation failed", data);
-        setSubmitMessage(
-          data?.error || "Unable to save the request.",
-        );
+        setSubmitMessage(data?.error || "Unable to save the request.");
+        setSubmitStatus("error");
         return;
       }
 
@@ -119,12 +123,16 @@ export default function ClinicianForm({
         ...EMPTY_FORM,
       });
 
+      setSubmitMessage("Request successfully created!");
+      setSubmitStatus("success");
+
       if (onSuccess) {
         onSuccess(data);
       }
     } catch (err) {
       console.error("Clinician request save error", err);
       setSubmitMessage("Unable to save the request.");
+      setSubmitStatus("error");
     } finally {
       setSubmitting(false);
     }
@@ -154,7 +162,13 @@ export default function ClinicianForm({
 
           <div className="p-6 space-y-4">
             {submitMessage && (
-              <p className="text-red-400 text-sm">{submitMessage}</p>
+              <p
+                className={`text-sm ${
+                  submitStatus === "success" ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {submitMessage}
+              </p>
             )}
 
             <div className="grid grid-cols-1 gap-4">
