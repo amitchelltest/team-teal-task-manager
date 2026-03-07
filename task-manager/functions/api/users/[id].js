@@ -50,7 +50,8 @@ export async function onRequestPatch(context) {
     });
   }
 
-  const body = await parseJson(request);
+  // Parse a clone so the original request body remains readable by updateHandlers.item().
+  const body = await parseJson(request.clone());
   if (body.role !== undefined && !isValidUserRole(body.role)) {
     return new Response(JSON.stringify({ error: "Unknown role." }), {
       status: 400,
