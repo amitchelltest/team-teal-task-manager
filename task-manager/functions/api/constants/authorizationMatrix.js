@@ -96,13 +96,6 @@ export const AUTHORIZATION_MATRIX = Object.freeze({
       clinician: DENY,
       professor: DENY,
     }),
-    POST: decisionsByRole({
-      admin: ALLOW,
-      developer: DENY,
-      aiTeam: DENY,
-      clinician: DENY,
-      professor: DENY,
-    }),
   }),
   "/api/users/:id": Object.freeze({
     GET: decisionsByRole({

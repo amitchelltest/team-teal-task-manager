@@ -18,24 +18,6 @@ describe("Users API with D1 (integration)", () => {
     }
   });
 
-  it("prevents creating a user with a duplicate email", async () => {
-    // alice@example.com is seeded in 007_data_seed.sql with id=1
-    const createRes = await authFetch(`${BASE_URL}/api/users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        display_name: "Duplicate Alice",
-        email: "alice@example.com",
-        timezone: "UTC",
-      }),
-    });
-
-    expect(createRes.status).toBe(400);
-    const errorBody = await createRes.json();
-    expect(errorBody).toBeTruthy();
-    expect(errorBody.error).toBe("Email already in use");
-  });
-
   it("returns seeded users with role", async () => {
     const res = await authFetch(`${BASE_URL}/api/users`);
     const data = await res.json();
@@ -55,17 +37,4 @@ describe("Users API with D1 (integration)", () => {
     expect(updated.role).toBe("clinician");
   });
 
-  it("rejects invalid role on POST", async () => {
-  const res = await authFetch(`${BASE_URL}/api/users`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      display_name: "Bad Role",
-      email: "badrole@example.com",
-      timezone: "UTC",
-      role: "superadmin",
-    }),
-  });
-    expect(res.status).toBe(400);
-  });
 });
