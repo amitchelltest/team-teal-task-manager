@@ -48,5 +48,4 @@ describe("Users API with D1 (integration)", () => {
     const body = await patchRes.json();
     expect(body).toEqual({ error: "Unknown role." });
   });
-
 });
