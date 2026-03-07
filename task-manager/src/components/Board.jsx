@@ -4,6 +4,7 @@ import { DragDropContext } from "@hello-pangea/dnd";
 function Board({
   columns = [],
   setColumns = () => {},
+  isDraggable = true, 
   boardTitle = "Board",
   emptyColumnsText = "No Columns",
   layout = "horizontal",
@@ -86,7 +87,7 @@ function Board({
   };
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext onDragEnd={isDraggable ? onDragEnd : () => {}}>
       <section className="flex flex-col rounded-lg w-full max-w-screen-2xl mx-auto min-h-[500px] bg-slate-800/30 shadow-xl">
         <div className="bg-gradient-to-r from-slate-700 to-slate-600 text-white text-center px-5 py-3 rounded-t-lg shadow-md">
           <h2 className="text-xl font-semibold m-0">{boardTitle}</h2>

@@ -39,7 +39,7 @@ export default function KanbanColumn({ title, tasks = [], colIndex, fullWidth = 
             {tasks.length > 0 ? (
               <>
                 {tasks.map((task, index) => (
-                  <TaskCard key={task.id} task={task} fullWidth={fullWidth} index={index} />
+                  <TaskCard key={task.id} task={task} fullWidth={fullWidth} index={index} readOnly={readOnly} />
                 ))}
                 {provided.placeholder}
               </>
