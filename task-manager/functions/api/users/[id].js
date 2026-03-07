@@ -1,4 +1,9 @@
-import { makeCrudHandlers } from "../helpers.js";
+import {
+  makeCrudHandlers,
+  parseJson,
+  buildCorsHeaders,
+} from "../helpers.js";
+import { isValidUserRole } from "../constants/roles.js";
 
 // Use the generic CRUD handlers for the Users item endpoint
 const createHandlers = makeCrudHandlers({
@@ -35,9 +40,26 @@ const updateHandlers = makeCrudHandlers({
 export const onRequestGet = createHandlers.item;
 
 // UPDATE row/user
-// Sandra: Possible TODO: add app-level role validation for PATCH /api/users/:id
-// so invalid roles return 400 instead of relying on DB CHECK errors.
-export const onRequestPatch = updateHandlers.item;
+export async function onRequestPatch(context) {
+  const { request, env } = context;
+  const CORS = buildCorsHeaders(env, request, "GET,PUT,PATCH,DELETE,OPTIONS");
+  if (request.headers.get("Origin") && !CORS) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const body = await parseJson(request);
+  if (body.role !== undefined && !isValidUserRole(body.role)) {
+    return new Response(JSON.stringify({ error: "Unknown role." }), {
+      status: 400,
+      headers: CORS || { "Content-Type": "application/json" },
+    });
+  }
+
+  return updateHandlers.item(context);
+}
 
 // DELETE a row/user
 export const onRequestDelete = createHandlers.item;
