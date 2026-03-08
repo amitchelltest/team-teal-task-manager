@@ -44,7 +44,7 @@ function UserWithTime({ userId, user, users }) {
  * - The parent column / list is responsible for loading tasks from the backend
  *   and passing the correct data into this component.
  */
-export default function TaskCard({ task, index, fullWidth, readOnly }) {
+export default function TaskCard({ task, index, fullWidth }) {
   const navigate = useNavigate();
   const { users } = useUsers();
 
@@ -53,13 +53,6 @@ export default function TaskCard({ task, index, fullWidth, readOnly }) {
   }
 
   const { id, title, reporter_id, assignee_id, start_date, due_date } = task;
-
-  //if not readOnly, render draggable
-  if (readOnly) {
-    return (
-      <div> className="task-card"</div>
-    );
-  }
 
   const isOverdue = isDateOverdue(due_date);
 
