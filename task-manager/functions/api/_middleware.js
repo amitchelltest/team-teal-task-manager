@@ -150,6 +150,20 @@ export async function onRequest(context) {
         });
       }
     }
+
+    // Fail closed for unknown decision types.
+    const knownDecisions = new Set([
+      AUTHZ_DECISIONS.ALLOW,
+      AUTHZ_DECISIONS.DENY,
+      AUTHZ_DECISIONS.SELF,
+      AUTHZ_DECISIONS.OWN_COMMENT,
+    ]);
+    if (!knownDecisions.has(decision)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   } catch {
     return new Response(JSON.stringify({ error: "Invalid session" }), {
       status: 401,
