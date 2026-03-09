@@ -26,16 +26,15 @@ describe("Users API with D1 (integration)", () => {
     }
   });
 
-  it("updates a user's role via PATCH", async () => {
+  it("rejects non-admin self role update via PATCH", async () => {
     const patchRes = await authFetch(`${BASE_URL}/api/users/1`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role: "clinician" }),
     });
-    expect(patchRes.ok).toBe(true);
-
-    const updated = await patchRes.json();
-    expect(updated.role).toBe("clinician");
+    expect(patchRes.status).toBe(403);
+    const body = await patchRes.json();
+    expect(body).toEqual({ error: "Forbidden" });
   });
 
   it("rejects non-self role update via PATCH", async () => {
@@ -50,8 +49,27 @@ describe("Users API with D1 (integration)", () => {
     expect(body).toEqual({ error: "Forbidden" });
   });
 
-  it("rejects invalid role on PATCH", async () => {
-    const patchRes = await authFetch(`${BASE_URL}/api/users/1`, {
+  it("allows admin role update via PATCH", async () => {
+    const patchRes = await authFetchAsAdmin(`${BASE_URL}/api/users/1`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "clinician" }),
+    });
+
+    expect(patchRes.ok).toBe(true);
+    const updated = await patchRes.json();
+    expect(updated.role).toBe("clinician");
+
+    const restoreRes = await authFetchAsAdmin(`${BASE_URL}/api/users/1`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "developer" }),
+    });
+    expect(restoreRes.ok).toBe(true);
+  });
+
+  it("rejects invalid role on admin PATCH", async () => {
+    const patchRes = await authFetchAsAdmin(`${BASE_URL}/api/users/1`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role: "superadmin" }),
