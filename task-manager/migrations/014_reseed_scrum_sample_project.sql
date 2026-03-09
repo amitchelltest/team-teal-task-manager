@@ -20,6 +20,13 @@ VALUES (
   'scrum'
 );
 
+-- Seed a demo sprint for the project
+INSERT OR IGNORE INTO Sprints (id, project_id, name, start_date, end_date, created_by, status)
+VALUES
+  (2, 4, 'Sprint 1', '2024-01-03', '2024-01-16', 2, 'complete'),
+  (3, 4, 'Sprint 2', '2024-01-16', '2024-02-01', 1, 'in_progress'),
+  (4, 4, 'Sprint 3', '2024-02-16', '2024-03-01', 2, 'not_started');
+
 -- scrum columns
 INSERT OR IGNORE INTO Columns (id, project_id, name, key, position)
 VALUES
