@@ -151,7 +151,7 @@ export async function onRequest(context) {
       }
     }
 
-    // Fail closed for unknown decision types.
+    // Fail for unknown decision types.
     const knownDecisions = new Set([
       AUTHZ_DECISIONS.ALLOW,
       AUTHZ_DECISIONS.DENY,
