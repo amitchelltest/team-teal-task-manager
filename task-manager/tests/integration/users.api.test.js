@@ -2,27 +2,12 @@ import { describe, it, expect } from "vitest";
 import { authFetch, BASE_URL } from "./helpers.js";
 
 describe("Users API with D1 (integration)", () => {
-  it("returns seeded users from the database", async () => {
+  it("rejects non-admin user listing", async () => {
     const res = await authFetch(`${BASE_URL}/api/users`);
-    expect(res.ok).toBe(true);
+    expect(res.status).toBe(403);
 
-    const data = await res.json();
-    expect(Array.isArray(data)).toBe(true);
-    expect(data.length).toBeGreaterThan(0);
-
-    const user1 = data.find((u) => u.id === 1);
-    expect(user1).toBeTruthy();
-    if (user1) {
-      expect(user1.display_name).toBe("Alice Developer");
-      expect(user1.email).toBe("alice@example.com");
-    }
-  });
-
-  it("returns seeded users with role", async () => {
-    const res = await authFetch(`${BASE_URL}/api/users`);
-    const data = await res.json();
-    const user1 = data.find((u) => u.id === 1);
-    expect(user1.role).toBeTruthy();
+    const body = await res.json();
+    expect(body).toEqual({ error: "Forbidden" });
   });
 
   it("updates a user's role via PATCH", async () => {
