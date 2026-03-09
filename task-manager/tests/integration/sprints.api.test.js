@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { authFetch, BASE_URL } from "./helpers.js";
+import { authFetch, authFetchAsAdmin, BASE_URL } from "./helpers.js";
 
 describe("Sprints API with D1 (integration)", () => {
   it("Returns seeded Sprint from database", async () => {
@@ -25,7 +25,7 @@ describe("Sprints API with D1 (integration)", () => {
 
   it("Creates a new sprint with default timestamps", async () => {
     // Create a sprint
-    const createRes = await authFetch(`${BASE_URL}/api/sprints`, {
+    const createRes = await authFetchAsAdmin(`${BASE_URL}/api/sprints`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -46,7 +46,7 @@ describe("Sprints API with D1 (integration)", () => {
 
   it("Updates a sprints's start_date and end_date and refreshes updated_at", async () => {
     // First create a sprint
-    const createRes = await authFetch(`${BASE_URL}/api/sprints`, {
+    const createRes = await authFetchAsAdmin(`${BASE_URL}/api/sprints`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -62,7 +62,7 @@ describe("Sprints API with D1 (integration)", () => {
     expect(id).toBeDefined();
 
     // Update status
-    const updateRes = await authFetch(`${BASE_URL}/api/sprints/${id}`, {
+    const updateRes = await authFetchAsAdmin(`${BASE_URL}/api/sprints/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -101,7 +101,7 @@ describe("Sprints API with D1 (integration)", () => {
   });
 
   it("Deletes a sprint and confirms it is gone", async () => {
-    const createRes = await authFetch(`${BASE_URL}/api/sprints`, {
+    const createRes = await authFetchAsAdmin(`${BASE_URL}/api/sprints`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -114,7 +114,7 @@ describe("Sprints API with D1 (integration)", () => {
     const id = created.id;
     expect(id).toBeDefined();
 
-    const deleteRes = await authFetch(`${BASE_URL}/api/sprints/${id}`, {
+    const deleteRes = await authFetchAsAdmin(`${BASE_URL}/api/sprints/${id}`, {
       method: "DELETE",
     });
     expect(deleteRes.ok).toBe(true);
