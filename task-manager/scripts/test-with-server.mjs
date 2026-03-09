@@ -201,9 +201,19 @@ async function main() {
     .setIssuedAt()
     .setExpirationTime("1h")
     .sign(secret);
+  // Mutable-role Test Token (reserved for tests that intentionally change role/state)
+  const mutableTestToken = await new SignJWT({
+    sub: "2",
+    email: "bob@example.com",
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("1h")
+    .sign(secret);
 
   process.env.TEST_SESSION_TOKEN = testToken;
   process.env.TEST_ADMIN_SESSION_TOKEN = adminTestToken;
+  process.env.TEST_MUTABLE_SESSION_TOKEN = mutableTestToken;
 
   try {
     // 5) Run only the integration tests that rely on Wrangler + D1.

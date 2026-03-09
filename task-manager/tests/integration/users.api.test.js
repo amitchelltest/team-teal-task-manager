@@ -50,7 +50,7 @@ describe("Users API with D1 (integration)", () => {
   });
 
   it("allows admin role update via PATCH", async () => {
-    const patchRes = await authFetchAsAdmin(`${BASE_URL}/api/users/1`, {
+    const patchRes = await authFetchAsAdmin(`${BASE_URL}/api/users/2`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role: "clinician" }),
@@ -60,7 +60,7 @@ describe("Users API with D1 (integration)", () => {
     const updated = await patchRes.json();
     expect(updated.role).toBe("clinician");
 
-    const restoreRes = await authFetchAsAdmin(`${BASE_URL}/api/users/1`, {
+    const restoreRes = await authFetchAsAdmin(`${BASE_URL}/api/users/2`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role: "developer" }),
@@ -69,7 +69,7 @@ describe("Users API with D1 (integration)", () => {
   });
 
   it("rejects invalid role on admin PATCH", async () => {
-    const patchRes = await authFetchAsAdmin(`${BASE_URL}/api/users/1`, {
+    const patchRes = await authFetchAsAdmin(`${BASE_URL}/api/users/2`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role: "superadmin" }),
