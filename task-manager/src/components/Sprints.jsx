@@ -3,17 +3,38 @@ import Board from "./Board";
 
 function Sprints({ 
     columns = [], 
+    sprintStatus = [],
     sprints = [],
     setSprintColumns = () => {}, 
-    setSprints = () => {}, 
+    setSprintStatus = () => {}, 
     setSprintId = () => {},
     boardTitle = "Sprint"}) {
-        console.log("sprints: ");
-        console.log(sprints);
+
+        const [buttonText, setButtonText] = useState("Not started");
+
+        const handleSprintSelection = (e) => {
+            setSprintId(e.target.value);
+        };
+
+        const handleSprintState = (e) => {
+            switch(sprintStatus) {
+                case 'not_started':
+                    setButtonText("In progress");
+                    setSprintStatus('in_progress');
+                    console.log("progress");
+                    break;
+                case 'in_progress':
+                    setButtonText("Complete");
+                    setSprintStatus('complete');
+                    console.log("complete");
+                    break;
+            }
+        };
+
     return (
         <>
             <select 
-                onChange={setSprintId}
+                onChange={handleSprintSelection}
                 className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/10 cursor-pointer"
             >
                 {sprints.map((s) => (
@@ -22,7 +43,7 @@ function Sprints({
                 </option>
               ))}
             </select>
-            <button onClick={setSprints}>Start sprint</button>
+            <button onClick={handleSprintState}>{buttonText}</button>
             <Board
                 columns={columns}
                 setColumns={setSprintColumns}

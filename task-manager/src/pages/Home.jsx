@@ -16,6 +16,7 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
   const [projectId, setProjectId] = useState(initialProjectId);
   const [projectTab, setProjectTab] = useState("Board");
   const [sprints, setSprints] = useState([]);
+  const [sprintStatus, setSprintStatus] = useState("not_started");
   const [sprintColumns, setSprintColumns] = useState([]);
   const [sprintId, setSprintId] = useState(initialSprintId)
 
@@ -86,6 +87,15 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
         tasks: sprintTasks
       }];
       setSprintColumns(sprintTaskCollection);
+      
+      const sprintById = sprintList.filter((s) => s.sprint_id == sprintId);
+      if (!Array.isArray(sprintById) || sprintById.error) {
+        return;
+      }
+      else if (!sprintById.length == 0){
+        setSprintStatus(sprintById[0].status);
+      }
+
     } catch (err) {
       console.error("Fetch error", err);
       setColumns([]);
@@ -140,7 +150,7 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
     loadColumns(projectId);
     // Added to trigger task filtering metadata load
     loadFilterMetadata();
-  }, [projectId]);
+  }, [projectId, sprintId]);
 
   const activeProjectColumns = useMemo(() => {
     return columns.filter(
@@ -187,8 +197,15 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
     setProjectId(nextProjectId);
     setProjectTab("Board");
   }
-  console.log("test")
-  console.log(sprints);
+
+  async function updateSprintStatus(newStatus) {
+    fetch(`/api/sprints/${sprintId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({projectId: projectId, status: newStatus}),
+    })
+  }
+
   const projectTabs = {
     Board: 
       <BoardComponent
@@ -200,9 +217,10 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
       <div>
         <Sprints
         columns={sprintColumns}
+        sprintStatus={sprintStatus}
         sprints={sprints}
         setSprintColumns={setSprintColumns}
-        setSprints={setSprints}
+        setSprintStatus={updateSprintStatus}
         setSprintId={setSprintId}
         boardTitle="Sprints"/>
         <Backlog
