@@ -51,8 +51,8 @@ VALUES
   (1007, 4, NULL, NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Backlog: Add empty states', 'Create useful zero-data messages', NULL, NULL, 1),
   (1008, 4, NULL, NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Backlog: Audit accessibility', 'Check heading/contrast/navigation', NULL, NULL, 2),
   (1009, 4, 100, NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Plan sprint goals', 'Draft goals for next sprint', NULL, NULL, 2),
-  (1010, 4, 100, 1, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Write sprint tests', 'Write tests for sprints', NULL, NULL, 2),
-  (1011, 4, 100, 1, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Create scrum board', 'Create scrum board component', NULL, NULL, 2),
-  (1012, 4, 101, 1, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Create scrum tests', 'Write tests for the scrum board', NULL, NULL, 2),
-  (1013, 4, 102, 1, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Sprint retro', 'Review sprint activity', NULL, NULL, 2),
-  (1014, 4, 101, 1, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Add tickets from retro', 'Add tickets based on retro', NULL, NULL, 2);
+  (1010, 4, 100, 2, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Write sprint tests', 'Write tests for sprints', NULL, NULL, 2),
+  (1011, 4, 100, 2, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Create scrum board', 'Create scrum board component', NULL, NULL, 2),
+  (1012, 4, 101, 3, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Create scrum tests', 'Write tests for the scrum board', NULL, NULL, 2),
+  (1013, 4, 102, 3, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Sprint retro', 'Review sprint activity', NULL, NULL, 2),
+  (1014, 4, 101, 4, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, (SELECT id FROM Users ORDER BY id LIMIT 1), NULL, 'Add tickets from retro', 'Add tickets based on retro', NULL, NULL, 2);
