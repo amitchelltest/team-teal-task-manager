@@ -57,6 +57,11 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
       }
       setSprints(sprintList);
 
+      // If current sprint is not in current project default to first sprint in project.
+      if (sprintList.length > 0 && !sprintList.some((s) => s.id == sprintId)) {
+        setSprintId(sprintList[0].id);
+      }
+
       const columnsWithTasks = cols.map((col) => {
         const colTasks = taskList
           .filter((t) => Number(t.column_id) === Number(col.id))
@@ -81,16 +86,13 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
       console.log(backlogTaskCollection);
 
       // Get sprint matching current sprint id
-      const currentSprint = sprintList.filter((s) => s.id == sprintId);
-      if (!Array.isArray(currentSprint) || currentSprint.error) {
-        return;
-      }
-      else if (!currentSprint.length == 0){
-        setSprintStatus(currentSprint[0].status);
+      const currentSprint = sprintList.find((s) => s.id == sprintId);
+      if (currentSprint){
+        setSprintStatus(currentSprint.status);
         const sprintTasks = taskList.filter((t) => t.sprint_id == sprintId);
         const sprintTaskCollection = [{
           id: sprintId,
-          title: currentSprint[0].name,
+          title: currentSprint.name,
           tasks: sprintTasks
         }];
         setSprintColumns(sprintTaskCollection);
@@ -228,6 +230,7 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
         <Sprints
         columns={sprintColumns}
         sprintStatus={sprintStatus}
+        sprintId={sprintId}
         sprints={sprints}
         setSprintColumns={setSprintColumns}
         setSprintStatus={setSprintStatus}
