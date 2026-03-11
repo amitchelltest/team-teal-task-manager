@@ -32,12 +32,15 @@ function Sprints({
                 case 'not_started':
                     setButtonText("Not started");
                     setButtonDisabled(false);
+                    break;
                 case 'in_progress':
                     setButtonText("In progress");
                     setButtonDisabled(false);
+                    break;
                 case 'completed':
                     setButtonText("Completed");
                     setButtonDisabled(true);
+                    break;
             }
         }
 
