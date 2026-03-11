@@ -50,7 +50,7 @@ function Sprints({
         };
 
         // On click for button to update the database sprint status and button state. 
-        const handleSprintState = (e) => {
+        const handleSprintState = () => {
             switch(sprintStatus) {
                 case 'not_started':
                     updateSprintStatus('in_progress');
