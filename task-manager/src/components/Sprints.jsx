@@ -14,20 +14,16 @@ function Sprints({
     sprintStatus = [],
     sprints = [],
     setSprintColumns = () => {}, 
-    setSprintStatus = () => {}, 
+    setSprintStatus = () => {},
+    updateSprintStatus = () => {}, 
     setSprintId = () => {},
     boardTitle = "Sprint"}) {
 
         const [buttonText, setButtonText] = useState("Not started");
         const [buttonDisabled, setButtonDisabled] = useState(false);
 
-        // Set selected currently sprint id.
-        const handleSprintSelection = (e) => {
-            setSprintId(e.target.value);
-        };
-
         // Change the buttons text and disabled status to match current sprint status.
-        const updateButton = () => {
+        useEffect(() => {
             switch(sprintStatus) {
                 case 'not_started':
                     setButtonText("Not started");
@@ -41,19 +37,27 @@ function Sprints({
                     setButtonText("Completed");
                     setButtonDisabled(true);
                     break;
+                default:
+                    setButtonText("Not started");
+                    setButtonDisabled(false);
             }
-        }
+        }, [sprintStatus]);
+
+        // Set selected currently sprint id.
+        const handleSprintSelection = (e) => {
+            setSprintId(e.target.value);
+        };
 
         // On click for button to update the database sprint status and button state. 
         const handleSprintState = (e) => {
             switch(sprintStatus) {
                 case 'not_started':
+                    updateSprintStatus('in_progress');
                     setSprintStatus('in_progress');
-                    updateButton();
                     break;
                 case 'in_progress':
+                    updateSprintStatus('complete');
                     setSprintStatus('complete');
-                    updateButton();
                     break;
             }
         };

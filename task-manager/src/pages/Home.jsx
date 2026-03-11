@@ -230,7 +230,8 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
         sprintStatus={sprintStatus}
         sprints={sprints}
         setSprintColumns={setSprintColumns}
-        setSprintStatus={updateSprintStatus}
+        setSprintStatus={setSprintStatus}
+        updateSprintStatus={updateSprintStatus}
         setSprintId={setSprintId}
         boardTitle="Sprints"/>
         <Backlog
