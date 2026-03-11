@@ -80,6 +80,7 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
       setBacklogColumns(backlogTaskCollection);
       console.log(backlogTaskCollection);
 
+      // Get sprint matching current sprint id
       const currentSprint = sprintList.filter((s) => s.id == sprintId);
       if (!Array.isArray(currentSprint) || currentSprint.error) {
         return;
@@ -198,12 +199,13 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
     setProjectTab("Board");
   }
 
+  // Update sprint status in the database.
   async function updateSprintStatus(newStatus) {
     try {
       const statusRes = await fetch(`/api/sprints/${sprintId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({projectId: projectId, status: newStatus}),
+        body: JSON.stringify({status: newStatus}),
       });
       const bodyRes = await statusRes.json().catch(() => null);
         if (!statusRes.ok) {

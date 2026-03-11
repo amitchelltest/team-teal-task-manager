@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import Board from "./Board";
 
+/*
+* Sprints
+*
+* Sprint component that displays the tasks in the currently selected sprint.
+* Selection box allows the user to select from sprints in the project.
+* Completion button toggles between not started, in progress, and completed.
+* Completion button updates the project status in the database.
+*/
 function Sprints({ 
     columns = [], 
     sprintStatus = [],
@@ -13,20 +21,36 @@ function Sprints({
         const [buttonText, setButtonText] = useState("Not started");
         const [buttonDisabled, setButtonDisabled] = useState(false);
 
+        // Set selected currently sprint id.
         const handleSprintSelection = (e) => {
             setSprintId(e.target.value);
         };
 
+        // Change the buttons text and disabled status to match current sprint status.
+        const updateButton = () => {
+            switch(sprintStatus) {
+                case 'not_started':
+                    setButtonText("Not started");
+                    setButtonDisabled(false);
+                case 'in_progress':
+                    setButtonText("In progress");
+                    setButtonDisabled(false);
+                case 'completed':
+                    setButtonText("Completed");
+                    setButtonDisabled(true);
+            }
+        }
+
+        // On click for button to update the database sprint status and button state. 
         const handleSprintState = (e) => {
             switch(sprintStatus) {
                 case 'not_started':
-                    setButtonText("In progress");
                     setSprintStatus('in_progress');
+                    updateButton();
                     break;
                 case 'in_progress':
-                    setButtonText("Complete");
-                    setButtonDisabled(true);
                     setSprintStatus('complete');
+                    updateButton();
                     break;
             }
         };
