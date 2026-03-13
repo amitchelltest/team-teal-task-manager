@@ -147,13 +147,15 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
     loadProjects();
   }, []);
 
+  /* Eslint creates a warning about not having loadcolumns in the dependancy array
+   however adding it will cause the application to rerender constantly */
   useEffect(() => {
     if (!projectId) return;
     setColumns([]);
     loadColumns(projectId);
     // Added to trigger task filtering metadata load
     loadFilterMetadata();
-  }, [projectId, sprintId]);
+  }, [projectId, sprintId]); // eslint-disable-line
 
   const activeProjectColumns = useMemo(() => {
     return columns.filter(
