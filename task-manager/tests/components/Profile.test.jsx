@@ -1,5 +1,5 @@
 import React, { act } from "react";
-import { describe, it, expect, vi, beforeEach, afterEach, assert } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { waitFor } from "@testing-library/react";
 import Profile from "../../src/pages/Profile";
