@@ -3,7 +3,11 @@
 
 /**
  * Reference data from the database seed (migrations/007_data_seed.sql)
- * Used for assertions in tests
+ * Used for assertions in tests.
+ *
+ * IMPORTANT: This data is duplicated from migrations/007_data_seed.sql
+ * If the seed data changes in either location, the other must be updated
+ * to match, or integration tests will fail.
  */
 export const seedData = {
   users: {
@@ -43,7 +47,7 @@ export const seedData = {
 /**
  * Login as a user by setting the session cookie with a test JWT
  * Uses environment variable TEST_SESSION_TOKEN set by test-with-server.mjs
- * 
+ *
  * @param {'developer' | 'admin' | 'mutable'} userType - Type of test user
  */
 Cypress.Commands.add('loginAs', (userType = 'developer') => {
@@ -102,9 +106,7 @@ Cypress.Commands.add('goToBoard', () => {
 Cypress.Commands.add('selectProject', (projectName) => {
   // Click the current project button to open dropdown (use force for hidden elements)
   cy.get('button').contains(/Demo Project|Select Project/).click({ force: true });
-  // Wait for dropdown to open
-  cy.wait(300);
-  // Select the desired project (use force in case it's partially hidden)
+  // Select the desired project (Cypress auto-retries until dropdown renders)
   cy.contains(projectName).click({ force: true });
   // Wait for board to reload
   cy.waitForBoardLoad();
@@ -120,7 +122,7 @@ Cypress.Commands.add('openTask', (taskTitle) => {
 
 /**
  * Add a comment to the currently open task
- * Note: Using placeholder selector since the textarea uses non-standard `testid` attribute 
+ * Note: Using placeholder selector since the textarea uses non-standard `testid` attribute
  * instead of `data-testid` which doesn't pass through to the DOM in React
  */
 Cypress.Commands.add('addComment', (commentText) => {
