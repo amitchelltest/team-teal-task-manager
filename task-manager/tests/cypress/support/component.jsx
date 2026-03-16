@@ -181,14 +181,100 @@ export function mountKanban() {
 }
 
 export function mountSprints() {
-  const sprintColumns = {}
-  const sprintStatus = {}
-  const sprintId = {}
-  const sprints = {}
-  const setSprintColumns = {}
-  const setSprintStatus = {}
-  const updateSprintStatus = {}
-  const setSprintId = {}
+  const sprintColumns = [
+    {
+      "id": 1,
+      "title": "Sprint 1",
+      "tasks": [
+        {
+          "id": 1,
+          "project_id": 1,
+          "column_id": 1,
+          "sprint_id": 1,
+          "reporter_id": 1,
+          "assignee_id": 2,
+          "created_by": 1,
+          "modified_by": 2,
+          "title": "Set up project",
+          "description": "Initialize repo, CI and migrations",
+          "start_date": "2026-01-02",
+          "due_date": "2026-01-04",
+          "created_at": "2026-03-16 23:15:51",
+          "updated_at": "2026-03-16 23:15:51",
+          "position": 0
+        },
+        {
+          "id": 2,
+          "project_id": 1,
+          "column_id": 1,
+          "sprint_id": 1,
+          "reporter_id": 2,
+          "assignee_id": 2,
+          "created_by": 2,
+          "modified_by": 2,
+          "title": "Create tasks endpoint",
+          "description": "Implement CRUD handlers for Tasks",
+          "start_date": "2026-01-03",
+          "due_date": "2026-01-07",
+          "created_at": "2026-03-16 23:15:51",
+          "updated_at": "2026-03-16 23:15:51",
+          "position": 1
+        }
+      ]
+    }
+  ]
+  const sprintStatus = 'not_started'
+  const sprintId = 2
+  const sprints = [
+    /*{
+      "id": 1,
+      "project_id": 1,
+      "name": "Sprint 1",
+      "start_date": "2026-01-01",
+      "end_date": "2026-01-15",
+      "created_by": 3,
+      "created_at": "2026-03-16 23:15:51",
+      "updated_at": "2026-03-16 23:15:51",
+      "status": "not_started"
+    },*/
+    {
+      "id": 2,
+      "project_id": 4,
+      "name": "Sprint 1",
+      "start_date": "2024-01-03",
+      "end_date": "2024-01-16",
+      "created_by": 2,
+      "created_at": "2026-03-16 23:15:52",
+      "updated_at": "2026-03-16 23:15:52",
+      "status": "complete"
+    },
+    {
+      "id": 3,
+      "project_id": 4,
+      "name": "Sprint 2",
+      "start_date": "2024-01-16",
+      "end_date": "2024-02-01",
+      "created_by": 1,
+      "created_at": "2026-03-16 23:15:52",
+      "updated_at": "2026-03-16 23:15:52",
+      "status": "in_progress"
+    },
+    {
+      "id": 4,
+      "project_id": 4,
+      "name": "Sprint 3",
+      "start_date": "2024-02-16",
+      "end_date": "2024-03-01",
+      "created_by": 2,
+      "created_at": "2026-03-16 23:15:52",
+      "updated_at": "2026-03-16 23:15:52",
+      "status": "not_started"
+    }
+  ]
+  const setSprintColumns = () => {}
+  const setSprintStatus = () => {}
+  const updateSprintStatus = () => {}
+  const setSprintId = () => {}
   return mount(
     <MockUsersProvider>
       <MemoryRouter>
