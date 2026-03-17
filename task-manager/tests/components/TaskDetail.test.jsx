@@ -43,7 +43,7 @@ describe("TaskDetail (Vitest)", () => {
     originalBodyHTML = document.body.innerHTML;
     originalFetch = global.fetch;
 
-    fetchMock = vi.fn(async (url) => {
+    fetchMock = vi.fn(async (url, options = {}) => {
       const method = options.method || "GET";
       const urlStr = String(url);
 
@@ -222,7 +222,7 @@ describe("TaskDetail (Vitest)", () => {
     });
     global.fetch = fetchMock;
 
-    const { container } = renderTaskDetail(`/task/${taskId}`);
+    renderTaskDetail(`/task/${taskId}`);
     await act(async () => { await flushPromises(); });
 
     const columnCalls = fetchMock.mock.calls.filter(([url]) => String(url).includes("/api/columns"));
@@ -294,7 +294,7 @@ describe("TaskDetail (Vitest)", () => {
     });
     global.fetch = fetchMock;
 
-    const { container } = renderTaskDetail(`/task/${taskId}`);
+    renderTaskDetail(`/task/${taskId}`);
     await act(async () => { await flushPromises(); });
 
     const projectCalls = fetchMock.mock.calls.filter(([url]) => String(url).includes("/api/projects/"));
