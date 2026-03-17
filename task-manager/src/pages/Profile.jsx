@@ -1,11 +1,29 @@
 import { useEffect, useState } from "react";
 
 /**
- * Get all IANA timezones from the browser as a flat sorted list.
- * Uses Intl.supportedValuesOf('timeZone') for the definitive list.
+ * Get the numeric UTC offset in minutes for a timezone.
+ */
+function getTimezoneOffsetMinutes(tz) {
+  try {
+    const now = new Date();
+    const utc = new Date(now.toLocaleString("en-US", { timeZone: "UTC" }));
+    const local = new Date(now.toLocaleString("en-US", { timeZone: tz }));
+    return (local - utc) / 60000;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Get all IANA timezones sorted by GMT offset, then alphabetically within the same offset.
  */
 function getTimezoneOptions() {
-  return Intl.supportedValuesOf("timeZone");
+  const zones = Intl.supportedValuesOf("timeZone");
+  return zones.sort((a, b) => {
+    const offsetDiff = getTimezoneOffsetMinutes(a) - getTimezoneOffsetMinutes(b);
+    if (offsetDiff !== 0) return offsetDiff;
+    return a.localeCompare(b);
+  });
 }
 
 /**
