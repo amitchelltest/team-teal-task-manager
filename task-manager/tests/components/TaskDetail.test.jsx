@@ -43,7 +43,7 @@ describe("TaskDetail (Vitest)", () => {
     originalBodyHTML = document.body.innerHTML;
     originalFetch = global.fetch;
 
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const method = options.method || "GET";
       const urlStr = String(url);
 
@@ -93,7 +93,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 83-84: task API returns non-ok ──────────────────────────────────
   it("shows error message when task API returns non-ok", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: false, json: async () => ({ error: "not found" }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -109,7 +109,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 89-90: task fetch throws ────────────────────────────────────────
   it("shows error message when task fetch throws a network error", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) throw new Error("Network failure");
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -125,7 +125,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 111-113: comments API returns non-ok ────────────────────────────
   it("shows error message when comments API returns non-ok", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task" }) };
       if (urlStr.startsWith("/api/comments")) return { ok: false, json: async () => ({ error: "boom" }) };
@@ -141,7 +141,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 118-120: comments fetch throws ─────────────────────────────────
   it("shows error message when comments fetch throws a network error", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task" }) };
       if (urlStr.startsWith("/api/comments")) throw new Error("Network failure");
@@ -157,7 +157,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 133-149: columns loaded for task project ────────────────────────
   it("loads columns for task project and uses them for status label", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", project_id: 5, column_id: 10 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -176,7 +176,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 137-138: columns API returns non-array body ────────────────────
   it("handles columns API returning a non-array response body", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", project_id: 5, column_id: 10 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -195,7 +195,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 148-149: columns fetch throws a network error ───────────────────
   it("handles columns fetch throwing a network error", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", project_id: 5, column_id: 10 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -214,7 +214,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 154/156: no columns when task has no project_id ─────────────────
   it("does not fetch columns when task has no project_id", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task" }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -231,7 +231,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 181-192: project name loaded and displayed ──────────────────────
   it("displays project name fetched from API", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", project_id: 7 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -249,7 +249,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 191-192: project name fetch throws a network error ─────────────
   it("handles project name fetch throwing a network error", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", project_id: 7 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -268,7 +268,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 184-186: project API returns error falls back to raw id ─────────
   it("falls back to project_id when project API returns non-ok", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", project_id: 7 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -286,7 +286,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 197: no project name fetched when task has no project_id ────────
   it("does not fetch project name when task has no project_id", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task" }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -303,7 +303,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 205-206: status label is "Backlog" when column_id is null ───────
   it("shows 'Backlog' status when task column_id is null", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", project_id: 5, column_id: null }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -321,7 +321,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 214-215: status label falls back to "Column X" when no match ────
   it("shows fallback 'Column X' when column_id does not match any loaded column", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", project_id: 5, column_id: 99 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -339,7 +339,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 230-235: Edit Task button and description rendered ──────────────
   it("renders the Edit Task button and description", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "My Task", description: "Task description here" }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -357,7 +357,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 258-263: sprint_id rendered ─────────────────────────────────────
   it("displays sprint_id when present", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", sprint_id: 3 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -378,7 +378,7 @@ describe("TaskDetail (Vitest)", () => {
       { id: 10, display_name: "Alice" },
       { id: 20, display_name: "Bob" },
     ];
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", assignee_id: 10, reporter_id: 20 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -397,7 +397,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 14-19: UserWithTime shows "User X" when user not in context ─────
   it("shows 'User X' fallback when assignee is not found in users list", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", assignee_id: 99 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -414,7 +414,7 @@ describe("TaskDetail (Vitest)", () => {
   // ── Lines 17-18: UserWithTime prefers email when no display_name ──────────
   it("shows email when user has no display_name", async () => {
     const users = [{ id: 10, email: "alice@example.com" }];
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", assignee_id: 10 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -430,7 +430,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 300-315: created_at and updated_at dates rendered ───────────────
   it("displays created_at and updated_at when present", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return {
         ok: true,
@@ -454,7 +454,7 @@ describe("TaskDetail (Vitest)", () => {
       { id: 5, display_name: "Creator" },
       { id: 6, display_name: "Modifier" },
     ];
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task", created_by: 5, modified_by: 6 }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -473,7 +473,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 349-361: existing comments rendered in list ─────────────────────
   it("renders existing comments", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task" }) };
       if (urlStr.startsWith("/api/comments")) return {
@@ -550,7 +550,7 @@ describe("TaskDetail (Vitest)", () => {
 
   // ── Lines 403-416: Edit modal opens and closes ────────────────────────────
   it("opens the edit modal when Edit Task is clicked", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task" }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
@@ -569,7 +569,7 @@ describe("TaskDetail (Vitest)", () => {
   });
 
   it("closes the edit modal when Cancel is clicked", async () => {
-    fetchMock = vi.fn(async (url, options = {}) => {
+    fetchMock = vi.fn(async (url) => {
       const urlStr = String(url);
       if (urlStr.startsWith("/api/tasks/")) return { ok: true, json: async () => ({ id: 42, title: "Task" }) };
       if (urlStr.startsWith("/api/comments")) return { ok: true, json: async () => [] };
