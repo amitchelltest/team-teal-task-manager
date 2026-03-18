@@ -1,12 +1,10 @@
 -- Consolidated schema: final-state DDL for the task-manager database.
--- This single migration replaces the incremental 006–016 chain.
+-- This single migration replaces the incremental 006-016 chain.
 -- Seed / test data lives separately in seed/seed.sql.
 
 PRAGMA foreign_keys = ON;
 
----------------------------------------------------------------------
 -- USERS
----------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS Users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     display_name TEXT NOT NULL,
@@ -18,9 +16,7 @@ CREATE TABLE IF NOT EXISTS Users (
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
----------------------------------------------------------------------
 -- USER_PROVIDERS  (OAuth / third-party auth)
----------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS User_Providers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -33,9 +29,7 @@ CREATE TABLE IF NOT EXISTS User_Providers (
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 
----------------------------------------------------------------------
 -- PROJECTS
----------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS Projects (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -49,9 +43,7 @@ CREATE TABLE IF NOT EXISTS Projects (
     FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE RESTRICT
 );
 
----------------------------------------------------------------------
 -- SPRINTS
----------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS Sprints (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -67,9 +59,7 @@ CREATE TABLE IF NOT EXISTS Sprints (
     FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE RESTRICT
 );
 
----------------------------------------------------------------------
 -- COLUMNS
----------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS Columns (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -82,9 +72,7 @@ CREATE TABLE IF NOT EXISTS Columns (
     UNIQUE (project_id, key)
 );
 
----------------------------------------------------------------------
 -- TASKS
----------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS Tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -110,9 +98,7 @@ CREATE TABLE IF NOT EXISTS Tasks (
     FOREIGN KEY (modified_by) REFERENCES Users(id) ON DELETE SET NULL
 );
 
----------------------------------------------------------------------
 -- COMMENTS
----------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS Comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id INTEGER NOT NULL,
@@ -124,9 +110,7 @@ CREATE TABLE IF NOT EXISTS Comments (
     FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE RESTRICT
 );
 
----------------------------------------------------------------------
 -- TRIGGERS
----------------------------------------------------------------------
 
 -- Tasks: start_date must not exceed due_date
 CREATE TRIGGER IF NOT EXISTS validate_task_dates_insert
@@ -181,9 +165,7 @@ BEGIN
     WHERE id = OLD.id;
 END;
 
----------------------------------------------------------------------
 -- INDICES
----------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_projects_created_by ON Projects(created_by);
 CREATE INDEX IF NOT EXISTS idx_sprints_project_id ON Sprints(project_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON Tasks(project_id);
