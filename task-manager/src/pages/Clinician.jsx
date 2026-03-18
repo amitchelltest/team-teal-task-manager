@@ -1,4 +1,4 @@
-import { useState,  useContext } from "react";
+import { useContext, useState } from "react";
 import ClinicianForm from "../components/ClinicianForm.jsx";
 import PageLayout from "../components/PageLayout.jsx";
 import ClinicianBoard from "../components/ClinicianBoard.jsx";
@@ -8,9 +8,19 @@ export default function ClinicianPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   /* Adding states for task filtering */
+  const { users } = useContext(UsersContext);
   const [selectedAssignee, setSelectedAssignee] = useState("all");
   const [selectedReporter, setSelectedReporter] = useState("all");
-  const { users } = useContext(UsersContext);
+  const [selectedStatus, setSelectedStatus] = useState("all");
+
+  /* Manually defining columns for task filtering since they aren't coming from an API call in this file*/
+  const clinicianColumns = [
+    { id: "0", title: "To Do" },
+    { id: "1", title: "In Progress" },
+    { id: "2", title: "Blocked" },
+    { id: "3", title: "In Review" },
+    { id: "4", title: "Complete" }
+  ];
 
   function openModal() {
     setShowCreateModal(true);
@@ -87,6 +97,27 @@ export default function ClinicianPage() {
               ))}
             </select>
           </div>
+
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="status-filter"
+              className="text-white/70 text-sm whitespace-nowrap"
+            >
+              Status:
+            </label>
+            <select
+              id="status-filter"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/10 cursor-pointer">
+              <option value="all" className="bg-slate-800">All Task Statuses</option>
+              {clinicianColumns.map((col) => (
+                <option key={col.id} value={col.id} className="bg-slate-800">
+                  {col.title}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
 
@@ -98,6 +129,7 @@ export default function ClinicianPage() {
       <ClinicianBoard
         selectedAssignee={selectedAssignee}
         selectedReporter={selectedReporter}
+        selectedStatus={selectedStatus}
       />
     </PageLayout>
   );

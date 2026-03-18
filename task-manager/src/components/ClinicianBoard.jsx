@@ -68,7 +68,7 @@ export default function ClinicianBoard({ selectedAssignee, selectedReporter, sel
                     Number(t.reporter_id) === Number(selectedReporter);
                 const mStatus = 
                     selectedStatus === "all" ||
-                    Number(t.position) === Number(selectedStatus);
+                    Number(t.column_id) === Number(selectedStatus);
                 return mAssignee && mReporter && mStatus;
             }),
         })); 
