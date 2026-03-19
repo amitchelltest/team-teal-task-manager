@@ -40,7 +40,7 @@ describe('Sprint Creation Workflow', () => {
     cy.contains('button', 'Create').click();
     cy.get('#sprint-selection').select('2');
 
-    // assertion: task appears in sprint 1
+    // assertion: task appears in sprint 1 (id is 2)
     cy.contains(taskTitle, { timeout: 10000 }).should('be.visible');
   });
 });
