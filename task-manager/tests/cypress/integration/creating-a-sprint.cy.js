@@ -43,4 +43,16 @@ describe('Sprint Creation Workflow', () => {
     // assertion: task appears in sprint 1 (id is 2)
     cy.contains(taskTitle, { timeout: 10000 }).should('be.visible');
   });
+
+  it('displays sprint tasks on scrum board when sprint is active', () => {
+    // login -> dashboard -> select scrum project 
+    cy.goToBoard();
+    cy.selectProject('Scrum Sample Project');
+    cy.contains('Scrum Board').should('be.visible');
+    cy.contains('to do').should('be.visible');
+    cy.contains('in progress').should('be.visible');
+
+    // assertion: at least one task card exists on board
+    cy.get('[data-testid="task-card"]').should('exist');
+  });
 });
