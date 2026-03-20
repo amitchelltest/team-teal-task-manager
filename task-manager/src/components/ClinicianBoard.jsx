@@ -76,7 +76,7 @@ export default function ClinicianBoard({ selectedAssignee, selectedReporter, sel
 
     return (
         <Board
-            columns={columns}
+            columns={filteredColumns}
             setColumns={() => {}}
             boardTitle="Kanban Board"
             emptyColumnsText="No Columns"
