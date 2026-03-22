@@ -83,7 +83,6 @@ export default function Home({ projectId: initialProjectId }) {
 
       const backlogTasks = taskList.filter((t) => t.column_id == null);
       setBacklogColumns([{ id: null, title: "Backlog", tasks: backlogTasks }]);
-
       if (activeSprint) {
         setSprintStatus(activeSprint.status);
         const sprintTasks = taskList.filter((t) => t.sprint_id == activeSprintId && Number(t.project_id) === Number(projectId));
@@ -191,11 +190,28 @@ export default function Home({ projectId: initialProjectId }) {
         body: JSON.stringify({status: newStatus}),
       });
       const bodyRes = await statusRes.json().catch(() => null);
-        if (!statusRes.ok) {
-          console.error("Error updating sprint status", bodyRes);
-        } else {
-          await loadColumns(projectId);
-        }
+      if (!statusRes.ok) {
+        console.error("Error updating sprint status", bodyRes);
+        return;
+      }
+
+      if (newStatus === "complete") {
+        const completeColumnId = columns.find((col) => col.key === "complete")?.id ?? null;
+        const incompleteTasks = (sprintColumns[0]?.tasks ?? []).filter(
+          (t) => completeColumnId === null || Number(t.column_id) !== Number(completeColumnId)
+        );
+        await Promise.all(
+          incompleteTasks.map((task) =>
+            fetch(`/api/tasks/${task.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sprint_id: null, column_id: null }),
+            })
+          )
+        );
+      }
+
+      await loadColumns(projectId);
     } catch (err) {
       console.error("Error updating sprint status", err);
     }
