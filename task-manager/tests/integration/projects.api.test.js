@@ -53,7 +53,6 @@ describe("Projects API with D1 (integration)", () => {
                 created_by: 1}),
         });
 
-
         const created = await createRes.json();
         const id = created.id;
         // Check validity
