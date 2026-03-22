@@ -23,11 +23,11 @@ VALUES
   (3, 'Demo Project 3', 3);
 
 -- Kanban sprints
-INSERT OR IGNORE INTO Sprints (id, project_id, name, start_date, end_date, created_by)
+INSERT OR IGNORE INTO Sprints (id, project_id, name, start_date, end_date, created_by, status)
 VALUES
-  (1, 1, 'Sprint 1', '2026-01-01', '2026-01-15', 3),
-  (5, 2, 'Sprint 1', '2026-01-01', '2026-01-15', 3),
-  (6, 3, 'Sprint 1', '2026-01-01', '2026-01-15', 3);
+  (1, 1, 'Sprint 1', '2026-01-01', '2026-01-15', 3, 'in_progress'),
+  (5, 2, 'Sprint 1', '2026-01-01', '2026-01-15', 3, 'in_progress'),
+  (6, 3, 'Sprint 1', '2026-01-01', '2026-01-15', 3, 'in_progress');
 
 -- Kanban columns
 INSERT OR IGNORE INTO Columns (id, project_id, name, key, position)
