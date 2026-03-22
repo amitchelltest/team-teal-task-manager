@@ -197,9 +197,9 @@ export default function Home({ projectId: initialProjectId }) {
 
       if (newStatus === "complete") {
         const completeColumnId = columns.find((col) => col.key === "complete")?.id ?? null;
-        const incompleteTasks = (sprintColumns[0]?.tasks ?? []).filter(
-          (t) => completeColumnId === null || Number(t.column_id) !== Number(completeColumnId)
-        );
+        const incompleteTasks = columns
+          .filter((col) => Number(col.id) !== Number(completeColumnId))
+          .flatMap((col) => col.tasks);
         await Promise.all(
           incompleteTasks.map((task) =>
             fetch(`/api/tasks/${task.id}`, {
