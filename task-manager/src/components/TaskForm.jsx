@@ -56,8 +56,8 @@ export default function TaskForm({
   columnId = null,
   // List of columns for the current project board, used to populate the Status dropdown
   columnsForStatus = [],
-  // List of sprints for the current project, used to populate the Sprint dropdown
-  sprints = [],
+  // The current active sprint for the project (not_started or in_progress), or null
+  activeSprint = null,
   onSuccess,
   onCancel,
 }) {
@@ -202,12 +202,7 @@ export default function TaskForm({
       payload.project_id = projectId;
     }
 
-    // Status / column handling:
-    // - Backlog: no column_id sent (form.column_id is "" or falsy)
-    // - Specific column: include its id so the Tasks API can position it
-    if (form.column_id) {
-      payload.column_id = Number(form.column_id);
-    }
+    payload.column_id = form.column_id ? Number(form.column_id) : null;
 
     try {
       const isEdit = taskId != null;
@@ -339,11 +334,9 @@ export default function TaskForm({
                   className="bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/10"
                 >
                   <option value="">Backlog</option>
-                  {sprints.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
+                  {activeSprint && (
+                    <option value={activeSprint.id}>{activeSprint.name}</option>
+                  )}
                 </select>
               </label>
 

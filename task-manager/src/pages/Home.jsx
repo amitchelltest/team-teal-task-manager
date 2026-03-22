@@ -412,7 +412,7 @@ export default function Home({ projectId: initialProjectId }) {
             createdBy={1}
             modifiedBy={1}
             columnsForStatus={columns}
-            sprints={sprints}
+            activeSprint={sprints.find((s) => s.status === "in_progress" || s.status === "not_started") ?? null}
             onSuccess={handleCreated}
             onCancel={closeModal}
           />
