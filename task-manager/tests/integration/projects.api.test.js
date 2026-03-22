@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { authFetch, BASE_URL } from "./helpers.js";
+import { DEFAULT_COLUMNS } from "../../functions/api/constants/defaultColumns.js";
 
 describe("Projects API with D1 (integration)", () => {
     it("Returns seeded projects from database", async () => {
@@ -51,7 +52,6 @@ describe("Projects API with D1 (integration)", () => {
                 name: "Update Test Project",
                 created_by: 1}),
         });
-
 
         const created = await createRes.json();
         const id = created.id;
@@ -107,6 +107,37 @@ describe("Projects API with D1 (integration)", () => {
                 expect(seenNames.has(normalizedName)).toBe(false);
                 seenNames.add(normalizedName);
             }
+        }
+    });
+
+    it("Auto-creates default Kanban columns when a new project is created", async () => {
+        // Create a new project
+        const createRes = await authFetch(`${BASE_URL}/api/projects`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: "Auto-Column Test Project", created_by: 1 }),
+        });
+
+        expect(createRes.ok).toBe(true);
+        const created = await createRes.json();
+        expect(created.id).toBeDefined();
+
+        // Fetch columns for the new project
+        const colRes = await authFetch(
+            `${BASE_URL}/api/columns?project_id=${created.id}`,
+        );
+        expect(colRes.ok).toBe(true);
+
+        const columns = await colRes.json();
+        expect(Array.isArray(columns)).toBe(true);
+        expect(columns).toHaveLength(DEFAULT_COLUMNS.length);
+
+        // Columns are ordered by position ASC from the API
+        for (let i = 0; i < DEFAULT_COLUMNS.length; i++) {
+            expect(columns[i].name).toBe(DEFAULT_COLUMNS[i].name);
+            expect(columns[i].key).toBe(DEFAULT_COLUMNS[i].key);
+            expect(columns[i].position).toBe(DEFAULT_COLUMNS[i].position);
+            expect(columns[i].project_id).toBe(created.id);
         }
     });
 
