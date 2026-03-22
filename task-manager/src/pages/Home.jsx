@@ -81,7 +81,7 @@ export default function Home({ projectId: initialProjectId }) {
       });
       setColumns(columnsWithTasks);
 
-      const backlogTasks = taskList.filter((t) => t.column_id == null);
+      const backlogTasks = taskList.filter((t) => t.column_id == null && t.sprint_id == null);
       setBacklogColumns([{ id: null, title: "Backlog", tasks: backlogTasks }]);
       if (activeSprint) {
         setSprintStatus(activeSprint.status);
@@ -195,6 +195,22 @@ export default function Home({ projectId: initialProjectId }) {
         return;
       }
 
+      if (newStatus === "in_progress") {
+        const todoColumn = columns.find((col) => col.key === "todo");
+        if (todoColumn) {
+          const unplacedTasks = (sprintColumns[0]?.tasks ?? []).filter((t) => t.column_id == null);
+          await Promise.all(
+            unplacedTasks.map((task) =>
+              fetch(`/api/tasks/${task.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ column_id: todoColumn.id }),
+              })
+            )
+          );
+        }
+      }
+
       if (newStatus === "complete") {
         const completeColumnId = columns.find((col) => col.key === "complete")?.id ?? null;
         const incompleteTasks = columns
@@ -214,6 +230,24 @@ export default function Home({ projectId: initialProjectId }) {
       await loadColumns(projectId);
     } catch (err) {
       console.error("Error updating sprint status", err);
+    }
+  }
+
+  async function addTaskToSprint(taskId) {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sprint_id: sprintId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        console.error("Error adding task to sprint", data);
+        return;
+      }
+      await loadColumns(projectId);
+    } catch (err) {
+      console.error("Error adding task to sprint", err);
     }
   }
 
@@ -261,6 +295,7 @@ export default function Home({ projectId: initialProjectId }) {
         <Backlog
           key={projectId}
           backlog={backlogColumns}
+          onAddToSprint={sprintId ? addTaskToSprint : null}
         />
       </div>
   }
