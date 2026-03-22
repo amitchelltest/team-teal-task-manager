@@ -7,7 +7,7 @@ import Scrum from "../components/Scrum.jsx";
 import Backlog from "../components/Backlog.jsx";
 import Sprints from "../components/Sprints.jsx";
 
-export default function Home({ projectId: initialProjectId, sprintId: initialSprintId }) {
+export default function Home({ projectId: initialProjectId }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [columns, setColumns] = useState([]);
   const [backlogColumns, setBacklogColumns] = useState([]);
@@ -17,7 +17,7 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
   const [sprints, setSprints] = useState([]);
   const [sprintStatus, setSprintStatus] = useState("not_started");
   const [sprintColumns, setSprintColumns] = useState([]);
-  const [sprintId, setSprintId] = useState(initialSprintId)
+  const [sprintId, setSprintId] = useState(null)
 
   /* Adding states for task filtering */
   const [selectedAssignee, setSelectedAssignee] = useState("all");
@@ -56,17 +56,23 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
       }
       setSprints(sprintList);
 
-      // If current sprint is not in current project default to first sprint in project.
-      if (sprintList.length > 0 && !sprintList.some((s) => s.id == sprintId)) {
-        setSprintId(sprintList[0].id);
+      // Select the active (in_progress) sprint, fall back to first not_started sprint.
+      const activeSprint =
+        sprintList.find((s) => s.status === "in_progress") ||
+        sprintList.find((s) => s.status === "not_started");
+      const activeSprintId = activeSprint ? activeSprint.id : null;
+      if (activeSprintId != sprintId) {
+        setSprintId(activeSprintId);
       }
 
+      const isSprintActive = activeSprint?.status === "in_progress";
+
       const columnsWithTasks = cols.map((col) => {
-        const colTasks = taskList
-          .filter((t) => Number(t.column_id) === Number(col.id) && t.sprint_id == sprintId)
-          .sort(
-            (a, b) => (Number(a.position) || 0) - (Number(b.position) || 0),
-          );
+        const colTasks = isSprintActive
+          ? taskList
+              .filter((t) => Number(t.column_id) === Number(col.id) && t.sprint_id == activeSprintId)
+              .sort((a, b) => (Number(a.position) || 0) - (Number(b.position) || 0))
+          : [];
         return {
           ...col,
           title: col.name,
@@ -76,25 +82,12 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
       setColumns(columnsWithTasks);
 
       const backlogTasks = taskList.filter((t) => t.column_id == null);
-      const backlogTaskCollection = [{
-        id: null,
-        title: "Backlog",
-        tasks: backlogTasks,
-      }];
-      setBacklogColumns(backlogTaskCollection);
-      console.log(backlogTaskCollection);
+      setBacklogColumns([{ id: null, title: "Backlog", tasks: backlogTasks }]);
 
-      // Get sprint matching current sprint id
-      const currentSprint = sprintList.find((s) => s.id == sprintId);
-      if (currentSprint){
-        setSprintStatus(currentSprint.status);
-        const sprintTasks = taskList.filter((t) => t.sprint_id == sprintId && Number(t.project_id) === Number(projectId));
-        const sprintTaskCollection = [{
-          id: sprintId,
-          title: currentSprint.name,
-          tasks: sprintTasks
-        }];
-        setSprintColumns(sprintTaskCollection);
+      if (activeSprint) {
+        setSprintStatus(activeSprint.status);
+        const sprintTasks = taskList.filter((t) => t.sprint_id == activeSprintId && Number(t.project_id) === Number(projectId));
+        setSprintColumns([{ id: activeSprintId, title: activeSprint.name, tasks: sprintTasks }]);
       } else {
         setSprintColumns([]);
       }
@@ -200,6 +193,8 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
       const bodyRes = await statusRes.json().catch(() => null);
         if (!statusRes.ok) {
           console.error("Error updating sprint status", bodyRes);
+        } else {
+          await loadColumns(projectId);
         }
     } catch (err) {
       console.error("Error updating sprint status", err);
@@ -218,12 +213,10 @@ export default function Home({ projectId: initialProjectId, sprintId: initialSpr
         <Sprints
         columns={sprintColumns}
         sprintStatus={sprintStatus}
-        sprintId={sprintId}
-        sprints={sprints}
+        sprintName={sprintColumns[0]?.title ?? null}
         setSprintColumns={setSprintColumns}
         setSprintStatus={setSprintStatus}
         updateSprintStatus={updateSprintStatus}
-        setSprintId={setSprintId}
         boardTitle="Sprints"/>
         <Backlog
           key={projectId}

@@ -9,15 +9,13 @@ import Board from "./Board";
 * Completion button toggles between not started, in progress, and completed.
 * Completion button updates the project status in the database.
 */
-function Sprints({ 
-    columns = [], 
+function Sprints({
+    columns = [],
     sprintStatus = [],
-    sprintId = [],
-    sprints = [],
-    setSprintColumns = () => {}, 
+    sprintName = null,
+    setSprintColumns = () => {},
     setSprintStatus = () => {},
-    updateSprintStatus = () => {}, 
-    setSprintId = () => {},
+    updateSprintStatus = () => {},
     boardTitle = "Sprint"}) {
 
         const [buttonText, setButtonText] = useState("Not started");
@@ -44,12 +42,7 @@ function Sprints({
             }
         }, [sprintStatus]);
 
-        // Set selected currently sprint id.
-        const handleSprintSelection = (e) => {
-            setSprintId(e.target.value);
-        };
-
-        // On click for button to update the database sprint status and button state. 
+        // On click for button to update the database sprint status and button state.
         const handleSprintState = () => {
             switch(sprintStatus) {
                 case 'not_started':
@@ -65,18 +58,7 @@ function Sprints({
 
     return (
         <>
-            <select 
-                id="sprint-selection"
-                value={sprintId}
-                onChange={handleSprintSelection}
-                className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/10 cursor-pointer"
-            >
-                {sprints.map((s) => (
-                <option key={s.id} value={s.id} className="bg-slate-800">
-                  {s.name}
-                </option>
-              ))}
-            </select>
+            {sprintName && <span className="text-white font-semibold text-sm">{sprintName}</span>}
             <button onClick={handleSprintState} disabled={buttonDisabled}>{buttonText}</button>
             <Board
                 columns={columns}
