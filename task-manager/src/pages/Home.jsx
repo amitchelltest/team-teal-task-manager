@@ -217,6 +217,29 @@ export default function Home({ projectId: initialProjectId }) {
     }
   }
 
+  async function createSprint() {
+    try {
+      const nextNumber = sprints.length + 1;
+      const res = await fetch("/api/sprints", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project_id: projectId,
+          name: `Sprint ${nextNumber}`,
+          created_by: 1,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        console.error("Error creating sprint", data);
+        return;
+      }
+      await loadColumns(projectId);
+    } catch (err) {
+      console.error("Error creating sprint", err);
+    }
+  }
+
   const projectTabs = {
     Board:
       <Scrum
@@ -233,6 +256,7 @@ export default function Home({ projectId: initialProjectId }) {
         setSprintColumns={setSprintColumns}
         setSprintStatus={setSprintStatus}
         updateSprintStatus={updateSprintStatus}
+        createSprint={createSprint}
         boardTitle="Sprints"/>
         <Backlog
           key={projectId}

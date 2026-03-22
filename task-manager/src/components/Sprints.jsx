@@ -1,65 +1,64 @@
-import { useEffect, useState } from "react";
 import Board from "./Board";
 
 /*
 * Sprints
 *
 * Sprint component that displays the tasks in the currently selected sprint.
-* Selection box allows the user to select from sprints in the project.
-* Completion button toggles between not started, in progress, and completed.
-* Completion button updates the project status in the database.
+* Completion button moves the sprint through not_started → in_progress → complete.
+* When no sprint exists, a "Create New Sprint" button is shown instead.
 */
 function Sprints({
     columns = [],
-    sprintStatus = [],
+    sprintStatus = null,
     sprintName = null,
     setSprintColumns = () => {},
     setSprintStatus = () => {},
     updateSprintStatus = () => {},
+    createSprint = () => {},
     boardTitle = "Sprint"}) {
 
-        const [buttonText, setButtonText] = useState("Not started");
-        const [buttonDisabled, setButtonDisabled] = useState(false);
+    const statusLabels = {
+        not_started: "Not Started",
+        in_progress: "In Progress",
+        complete: "Complete",
+    };
 
-        // Change the buttons text and disabled status to match current sprint status.
-        useEffect(() => {
-            switch(sprintStatus) {
-                case 'not_started':
-                    setButtonText("Not started");
-                    setButtonDisabled(false);
-                    break;
-                case 'in_progress':
-                    setButtonText("In progress");
-                    setButtonDisabled(false);
-                    break;
-                case 'complete':
-                    setButtonText("Completed");
-                    setButtonDisabled(true);
-                    break;
-                default:
-                    setButtonText("Not started");
-                    setButtonDisabled(false);
-            }
-        }, [sprintStatus]);
+    const handleSprintState = () => {
+        if (!sprintName) {
+            createSprint();
+            return;
+        }
+        switch(sprintStatus) {
+            case 'not_started':
+                updateSprintStatus('in_progress');
+                setSprintStatus('in_progress');
+                break;
+            case 'in_progress':
+                updateSprintStatus('complete');
+                setSprintStatus('complete');
+                break;
+        }
+    };
 
-        // On click for button to update the database sprint status and button state.
-        const handleSprintState = () => {
-            switch(sprintStatus) {
-                case 'not_started':
-                    updateSprintStatus('in_progress');
-                    setSprintStatus('in_progress');
-                    break;
-                case 'in_progress':
-                    updateSprintStatus('complete');
-                    setSprintStatus('complete');
-                    break;
-            }
-        };
+    const buttonText = !sprintName
+        ? "Create New Sprint"
+        : sprintStatus === 'not_started'
+        ? "Start Sprint"
+        : "Complete Sprint";
 
     return (
         <>
-            {sprintName && <span className="text-white font-semibold text-sm">{sprintName}</span>}
-            <button onClick={handleSprintState} disabled={buttonDisabled}>{buttonText}</button>
+            <div className="flex items-center gap-3 mb-2">
+                {sprintName && (
+                    <span className="text-white font-semibold text-sm">{sprintName}</span>
+                )}
+                {sprintName && sprintStatus && (
+                    <span className="text-white/60 text-xs">
+                        {statusLabels[sprintStatus] ?? sprintStatus}
+                    </span>
+                )}
+                <button onClick={handleSprintState}>{buttonText}</button>
+            </div>
             <Board
                 columns={columns}
                 setColumns={setSprintColumns}
