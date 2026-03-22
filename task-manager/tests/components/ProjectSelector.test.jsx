@@ -39,6 +39,25 @@ describe("ProjectSelector", () => {
     expect(container.textContent).toContain("No Projects Available");
   });
 
+  it("shows '+ New Project' button even when projects list is empty", async () => {
+    const { container } = renderSelector({
+      projects: [],
+      onProjectCreated: vi.fn(),
+    });
+
+    expect(container.textContent).toContain("New Project");
+
+    // Click it and verify the form opens
+    const newBtn = [...container.querySelectorAll("button")].find(
+      (b) => b.textContent.includes("New Project"),
+    );
+    await act(async () => {
+      fireEvent.click(newBtn);
+    });
+
+    expect(container.querySelector("#project-name")).toBeTruthy();
+  });
+
   it("calls onSelectProject with the correct id when a project card is clicked", async () => {
     const onSelectProject = vi.fn();
     const { container } = renderSelector({
