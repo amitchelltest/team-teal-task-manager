@@ -6,6 +6,13 @@ import {
 } from "../helpers.js";
 import { isValidUserRole } from "../constants/roles.js";
 
+const USER_UPDATE_ALLOWED_COLUMNS = [
+  "display_name",
+  "timezone",
+  "role",
+  "is_active",
+];
+
 // Use the generic CRUD handlers for the Users item endpoint
 const createHandlers = makeCrudHandlers({
   table: "Users",
@@ -25,11 +32,7 @@ const createHandlers = makeCrudHandlers({
 const updateHandlers = makeCrudHandlers({
   table: "Users",
   primaryKey: "id",
-  allowedColumns: [
-    "display_name",
-    "timezone",
-    "role",
-    "is_active"],
+  allowedColumns: USER_UPDATE_ALLOWED_COLUMNS,
   dbEnvVar: "cf_db",
   orderBy: "id",
 });
@@ -104,13 +107,49 @@ export async function onRequestPatch(context) {
 
   if (isAdminUser && isSelf && (deactivatingSelf || demotingSelf)) {
     const db = env.cf_db;
-    const adminCountRow = await queryOne(
+    const targetUser = await queryOne(
       db,
-      "SELECT COUNT(*) AS count FROM Users WHERE role = 'admin' AND is_active = 1",
+      "SELECT id FROM Users WHERE id = ?",
+      [targetId],
     );
-    const activeAdminCount = Number(adminCountRow?.count || 0);
+    if (!targetUser) {
+      return new Response(JSON.stringify({}), {
+        status: 404,
+        headers: CORS,
+      });
+    }
 
-    if (activeAdminCount <= 1) {
+    const updates = {};
+    USER_UPDATE_ALLOWED_COLUMNS.forEach((col) => {
+      if (body[col] !== undefined) updates[col] = body[col];
+    });
+    const cols = Object.keys(updates);
+    if (cols.length === 0) {
+      return new Response(JSON.stringify({ error: "Nothing to update" }), {
+        status: 400,
+        headers: CORS,
+      });
+    }
+
+    const assignments = cols.map((col) => `${col} = ?`).join(", ");
+    const values = cols.map((col) => updates[col]);
+
+    const guardedUpdate = await db
+      .prepare(
+        `UPDATE Users
+         SET ${assignments}
+         WHERE id = ?
+           AND EXISTS (
+             SELECT 1
+             FROM Users
+             WHERE role = 'admin' AND is_active = 1 AND id != ?
+           )`,
+      )
+      .bind(...values, targetId, targetId)
+      .run();
+
+    const updatedRows = Number(guardedUpdate?.meta?.changes || 0);
+    if (updatedRows === 0) {
       return new Response(
         JSON.stringify({
           error: "Cannot remove the only active admin account.",
@@ -121,6 +160,9 @@ export async function onRequestPatch(context) {
         },
       );
     }
+
+    const updated = await queryOne(db, "SELECT * FROM Users WHERE id = ?", [targetId]);
+    return new Response(JSON.stringify(updated || {}), { headers: CORS });
   }
 
   const normalizedRequest = new Request(request.url, {
