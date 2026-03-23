@@ -6,6 +6,7 @@ import ProjectSelector from "../components/ProjectSelector.jsx";
 import Scrum from "../components/Scrum.jsx";
 import Backlog from "../components/Backlog.jsx";
 import Sprints from "../components/Sprints.jsx";
+import OldSprints from "../components/OldSprints.jsx";
 
 export default function Home({ projectId: initialProjectId }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -18,6 +19,7 @@ export default function Home({ projectId: initialProjectId }) {
   const [sprintStatus, setSprintStatus] = useState("not_started");
   const [sprintColumns, setSprintColumns] = useState([]);
   const [sprintId, setSprintId] = useState(null)
+  const [allTasks, setAllTasks] = useState([])
 
   /* Adding states for task filtering */
   const [selectedAssignee, setSelectedAssignee] = useState("all");
@@ -55,6 +57,7 @@ export default function Home({ projectId: initialProjectId }) {
         return;
       }
       setSprints(sprintList);
+      setAllTasks(taskList);
 
       // Select the active (in_progress) sprint, fall back to first not_started sprint.
       const activeSprint =
@@ -281,6 +284,9 @@ export default function Home({ projectId: initialProjectId }) {
   }
 
   const projectTabs = {
+    "Old Sprints": (
+      <OldSprints sprints={sprints} allTasks={allTasks} />
+    ),
     Board:
       <Scrum
         key={projectId}
@@ -344,6 +350,13 @@ export default function Home({ projectId: initialProjectId }) {
           onClick={handleProjectTabSwitch}
         >
           Backlog
+        </button>
+        <button
+          type="button"
+          value="Old Sprints"
+          onClick={handleProjectTabSwitch}
+        >
+          Old Sprints
         </button>
       </div>
 
