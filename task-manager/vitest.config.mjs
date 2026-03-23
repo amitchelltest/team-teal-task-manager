@@ -21,7 +21,6 @@ export default defineConfig({
         statements: 75,
       },
       include: ["src/components/**/*.{js,jsx}", "src/pages/**/*.{js,jsx}", "src/contexts/**/*.{js,jsx}"],
-      exclude: ["*ProjectSidebar", "*Board"],
     },
   },
 });
