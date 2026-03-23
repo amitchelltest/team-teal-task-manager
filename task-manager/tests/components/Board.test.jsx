@@ -13,8 +13,12 @@ vi.mock("@hello-pangea/dnd", () => ({
 }));
 
 vi.mock("../../src/components/KanbanColumn.jsx", () => ({
-  default: ({ title, tasks }) => (
-    <div data-testid="kanban-column">
+  default: ({ title, tasks, fullWidth, onAddToSprint }) => (
+    <div
+      data-testid="kanban-column"
+      data-full-width={String(Boolean(fullWidth))}
+      data-has-add-handler={String(typeof onAddToSprint === "function")}
+    >
       {title}:{tasks.length}
     </div>
   ),
@@ -103,5 +107,98 @@ describe("Board", () => {
       "/api/tasks/11",
       expect.objectContaining({ method: "PUT" }),
     );
+  });
+
+  it("supports vertical layout and passes column props", () => {
+    const onAddToSprint = vi.fn();
+    const { container } = render(
+      <Board
+        boardTitle="Clinical"
+        layout="vertical"
+        fullWidthColumns
+        onAddToSprint={onAddToSprint}
+        columns={[{ id: 1, title: "To Do", tasks: [] }]}
+      />,
+    );
+
+    expect(screen.getByText("Clinical")).toBeTruthy();
+    expect(container.querySelector(".flex-col.gap-4")).toBeTruthy();
+    expect(screen.getByTestId("kanban-column").getAttribute("data-full-width")).toBe("true");
+    expect(
+      screen.getByTestId("kanban-column").getAttribute("data-has-add-handler"),
+    ).toBe("true");
+  });
+
+  it("reverts task positions and alerts when persistence fails", async () => {
+    const setColumns = vi.fn();
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 403, json: async () => ({}) });
+
+    const originalColumns = [
+      {
+        id: 1,
+        title: "A",
+        tasks: [
+          { id: 11, position: 0 },
+          { id: 12, position: 1 },
+        ],
+      },
+      { id: 2, title: "B", tasks: [] },
+    ];
+
+    render(<Board columns={originalColumns} setColumns={setColumns} />);
+
+    dnd.onDragEnd({
+      source: { droppableId: "0", index: 1 },
+      destination: { droppableId: "1", index: 0 },
+    });
+
+    await waitFor(() => {
+      expect(global.alert).toHaveBeenCalledWith(
+        "Failed to move task. You may not have permission to make this change.",
+      );
+    });
+
+    expect(setColumns).toHaveBeenCalledTimes(2);
+    expect(setColumns).toHaveBeenNthCalledWith(1, expect.any(Array));
+    expect(setColumns).toHaveBeenNthCalledWith(2, expect.any(Function));
+
+    const revertUpdater = setColumns.mock.calls[1][0];
+    const optimisticState = setColumns.mock.calls[0][0];
+    const reverted = revertUpdater(optimisticState);
+
+    expect(reverted[0].tasks.map((task) => task.id)).toEqual([11, 12]);
+    expect(reverted[0].tasks[0].position).toBe(0);
+    expect(reverted[0].tasks[1].position).toBe(1);
+    expect(reverted[1].tasks).toEqual([]);
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it("skips persistence when a move generates no update payloads", async () => {
+    const setColumns = vi.fn();
+    global.fetch = vi.fn();
+
+    render(
+      <Board
+        columns={[
+          { id: undefined, title: "A", tasks: [{ position: 0 }] },
+          { id: undefined, title: "B", tasks: [] },
+        ]}
+        setColumns={setColumns}
+      />,
+    );
+
+    dnd.onDragEnd({
+      source: { droppableId: "0", index: 0 },
+      destination: { droppableId: "1", index: 0 },
+    });
+
+    await waitFor(() => {
+      expect(setColumns).toHaveBeenCalledTimes(1);
+    });
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(global.alert).not.toHaveBeenCalled();
   });
 });
