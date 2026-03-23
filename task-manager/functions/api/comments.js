@@ -89,15 +89,15 @@ export async function onRequestPost(context) {
       });
     }
 
-    const payloadCols = ["task_id", "created_by", "content"];
-    const values = [body.task_id, callerId, body.content];
-
     if (body.task_id === undefined || body.content === undefined) {
       return new Response(JSON.stringify({ error: "Missing task_id or content" }), {
         status: 400,
         headers: CORS,
       });
     }
+
+    const payloadCols = ["task_id", "created_by", "content"];
+    const values = [body.task_id, callerId, body.content];
 
     await insertInto(db, "Comments", payloadCols, values, []);
     const created = await queryOne(
