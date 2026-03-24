@@ -158,4 +158,4 @@ Use caution when applying production admin seed files. Keep production admin SQL
 
 - Admins can add users from the User Management page.
 - Admins can update user roles and active/inactive status.
-- Deactivated users can no longer authenticate with existing or new sessions. 
+- Deactivated users can no longer authenticate with existing or new sessions.   
