@@ -100,7 +100,6 @@ export async function onRequestPatch(context) {
   const targetId = Number.isFinite(Number(params?.id))
     ? Number(params?.id)
     : pathTargetId;
-  const isSelf = Number.isFinite(targetId) && targetId === Number(data?.user?.id);
   const isAdminUser = data?.user?.role === "admin";
   const deactivatingAdmin = body.is_active === 0;
   const demotingAdmin = body.role !== undefined && body.role !== "admin";
