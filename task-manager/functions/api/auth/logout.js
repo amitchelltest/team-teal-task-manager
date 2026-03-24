@@ -1,5 +1,5 @@
-const PAGES_DEV_SUFFIX = ".team-teal-task-manager.pages.dev";
-const COOKIE_DOMAIN = "team-teal-task-manager.pages.dev";
+const PAGES_DEV_SUFFIX = ".team-teal-task-manager-dkw.pages.dev";
+const COOKIE_DOMAIN = "team-teal-task-manager-dkw.pages.dev";
 
 function isLocalhost(hostname) {
   const h = hostname.split(":")[0];
